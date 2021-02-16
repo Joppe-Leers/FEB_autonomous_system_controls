@@ -1,0 +1,3 @@
+[submodule "src/fs_msgs"]
+	path = src/fs_msgs
+	url = https://github.com/wouter-heerwegh/fs_msgs.git
