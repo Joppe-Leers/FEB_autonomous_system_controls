@@ -7,7 +7,4 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/joppeleers/FEB_autonomous_system_controls/devel:$CMAKE_PREFIX_PATH"
 export PWD='/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/joppeleers/FEB_autonomous_system_controls/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/joppeleers/FEB_autonomous_system_controls/src:$ROS_PACKAGE_PATH"
