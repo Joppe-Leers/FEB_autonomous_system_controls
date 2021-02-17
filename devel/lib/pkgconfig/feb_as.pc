@@ -1,0 +1,8 @@
+prefix=/home/joppeleers/FEB_autonomous_system_controls/devel
+
+Name: feb_as
+Description: Description of feb_as
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

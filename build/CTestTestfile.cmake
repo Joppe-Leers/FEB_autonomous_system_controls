@@ -6,5 +6,6 @@
 # testing this directory and lists subdirectories to be tested as well.
 subdirs("gtest")
 subdirs("fs_msgs")
+subdirs("feb_as")
 subdirs("publish_test")
 subdirs("subscriber_test")

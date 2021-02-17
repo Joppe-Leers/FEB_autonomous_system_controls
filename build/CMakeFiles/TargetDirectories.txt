@@ -70,6 +70,13 @@
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/fs_msgs/CMakeFiles/fs_msgs_gencpp.dir
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/fs_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/fs_msgs/CMakeFiles/_fs_msgs_generate_messages_check_deps_FinishedSignal.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/install/strip.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/edit_cache.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/list_install_components.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/test.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/install/local.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/feb_as/CMakeFiles/install.dir
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/publish_test/CMakeFiles/install/strip.dir
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/publish_test/CMakeFiles/edit_cache.dir
 /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/publish_test/CMakeFiles/list_install_components.dir
