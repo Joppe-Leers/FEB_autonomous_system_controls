@@ -7,22 +7,21 @@ from nav_msgs.msg import Odometry
 class SimWrap:
     def __init__(self):
         print("simulator wrapper object created. call init to initialize")
+        self.posX = self.posY = self.posZ = 0.0
+        self.orX = self.orY = self.orZ = self.orW = 0.0
 
     def init(self):
         print("#### start initialization process ####")
         
         # Get all the cones in the track by subscribing to topic /fsds/testing_only/track
         print("subscribe to: /fsds/testing_only/track")
-        rospy.init_node('trackListener', anonymous=True, disable_signals=True)
+        rospy.init_node('listener', anonymous=True, disable_signals=True)
         rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)
-        rospy.spin() # wait here untill the node recieved all the cones
-        
-        # vorm de positie van de kegels om naar het formaat die gebruikt kan worden in de reward functie (twee lijnen -> blokken) Alec is met deze functie bezig
+        #rospy.spin() # wait here untill the node recieved all the cones
         
         # subscribe to topic /fsds/testing_only/odom to recieve the position and orientation from the car
-        rospy.init_node('odomListener', anonymous=True, disable_signals=True)
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
-        
+
         # subscribe op topic extra info om in de reward score te weten te komen hoeveel kegels er geraakt zijn.
         # rospy.init_node('extraInfoListener', anonymous=True, disable_signals=True)
         # rospy.Subscriber("/fsds/testing_only/track", Track, self.extraInfoCallback)
@@ -58,14 +57,23 @@ class SimWrap:
         print("ROS message recieved")
         self.cones = msg.track
         print(len(self.cones), "cones saved in list")
-        rospy.signal_shutdown("don't need this node anymore")
+        
+        # vorm de positie van de kegels om naar het formaat die gebruikt kan worden in de reward functie (twee lijnen -> blokken) Alec is met deze functie bezig
+        
+        #rospy.signal_shutdown("don't need this node anymore")
 
     def odomCallback(self, msg):
-        print(msg.pose.pose)
+        # update the variables
+        print(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+        self.posX = msg.pose.pose.position.x
+        self.posY = msg.pose.pose.position.y
+        self.posZ = msg.pose.pose.position.z
+        self.orX = msg.pose.pose.orientation.x
+        self.orY = msg.pose.pose.orientation.y
+        self.orZ = msg.pose.pose.orientation.z
+        self.orW = msg.pose.pose.orientation.w
         
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
     rospy.spin()
-    
-        
