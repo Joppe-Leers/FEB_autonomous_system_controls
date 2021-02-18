@@ -15,9 +15,10 @@ import time
 
 class SimWrap:
     
-    def __init__(self, lidarRange=10):
+    def __init__(self, lidarRange=10, lidarAngle = 180):
         self.cones = []
         self.lidarRange = lidarRange
+        self.lidarAngle = lidarAngle
         self.pub = 0
         # postition is used or the reward scores
         self.posX = 0.0
@@ -45,21 +46,16 @@ class SimWrap:
 
         # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
-        print("step")
-##        self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
-##        score, done = self.reward()
-##        state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
-##        
-##        for cone in self.getVision():
-##            state.append(cone.location.x)
-##            state.append(cone.location.y)
-##            state.append(cone.color)
-        
-            
-        
-        # TODO bereken de bekomen state met getVision methode
-        
-        # TODO bereken de reward
+        self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
+        score, done = self.reward()
+        # prepare next state
+        state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
+        for cone in self.getVision():
+            state.append(cone.location.x)
+            state.append(cone.location.y)
+            state.append(cone.color)
+
+        return state, score, done
 
     # reset the environment
     def reset(self):
@@ -68,13 +64,13 @@ class SimWrap:
         # TODO ros service reset om de auto terug op de startpositie te krijgen en de simulator te resetten
         
     # calculate the reward the car got based on the track map en the position of the car
-    def __reward(self):
+    def reward(self):
         #print("reward")
         return 100, False
 
     # returns a list of cones that are close enough to the car. Based on the cone list en position of the car.
     def getVision(self):
-        # TODO: de positie van de kegels moet gegeven worden relatieve aan de positie van de auto (met de gsp of odom?)
+        # TODO: enkel de kegels die binnen een bepaalde hoek zijn voor de auto terug geven
         conesInRange = []
         for cone in self.cones:
             if math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2) <= self.lidarRange:
@@ -90,9 +86,8 @@ class SimWrap:
     
     def conesCallback(self, msg):
         self.cones = msg.track
-        for cone in self.cones:
-            print(cone.color)
-    
+
+        
     def odomCallback(self, msg):
         self.posX = msg.pose.pose.position.x
         self.posY = msg.pose.pose.position.y
@@ -113,17 +108,4 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    while True:
-        conesClose = simulationWrapper.getVision()
-        print(len(conesClose))
-        x = []
-        y = []
-        for cone in conesClose:
-            x.append(cone.location.x)
-            y.append(cone.location.y)
-        plt.scatter(x, y)
-        plt.scatter(0, 0)
-        plt.savefig('vision.jpg')
-        plt.close()
-        time.sleep(5)
-    #rospy.spin() # deze zal er uitijndelijk uit moeten
+    rospy.spin() # deze zal er uitijndelijk uit moeten
