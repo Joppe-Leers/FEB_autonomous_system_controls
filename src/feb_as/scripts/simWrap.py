@@ -5,6 +5,7 @@ from fs_msgs.msg import Track
 from fs_msgs.msg import ControlCommand
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
+from fs_msgs.msg import Cone
 
 import matplotlib
 matplotlib.use('Agg')
@@ -15,24 +16,49 @@ import time
 class SimWrap:
     
     def __init__(self, lidarRange=10):
+        self.cones = []
+        self.lidarRange = lidarRange
+        self.pub = 0
+        # postition is used or the reward scores
         self.posX = 0.0
         self.posY = 0.0
         self.posZ = 0.0
-        self.cones = []
-        self.lidarRange = lidarRange
+        # orientation (or), linear_acceleration (la) and angular_velocity (av) is used for the state of the car
+        self.orX = 0.0
+        self.orY = 0.0
+        self.orZ = 0.0
+        self.orW = 0.0
+        self.laX = 0.0
+        self.laY = 0.0
+        self.laZ = 0.0
+        self.avX = 0.0
+        self.avY = 0.0
+        self.avZ = 0.0
         
-
+    # initialize the ros node that receives the sensor information and sends control commands
     def init(self):
         rospy.init_node('FEB_autonomous_system', anonymous=True, disable_signals=True)
         rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)        
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.imuCallback)
-    
-    # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
+        self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
+
+        # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
         print("step")
-        # TODO publish action op topic control_command
+##        self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
+##        score, done = self.reward()
+##        state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
+##        
+##        for cone in self.getVision():
+##            state.append(cone.location.x)
+##            state.append(cone.location.y)
+##            state.append(cone.color)
+        
+            
+        
         # TODO bereken de bekomen state met getVision methode
+        
         # TODO bereken de reward
 
     # reset the environment
@@ -40,35 +66,64 @@ class SimWrap:
         print("reset")
         # TODO herinitialiseer alle variabelen
         # TODO ros service reset om de auto terug op de startpositie te krijgen en de simulator te resetten
-
+        
     # calculate the reward the car got based on the track map en the position of the car
     def __reward(self):
-        print("reward")
-        return 100
+        #print("reward")
+        return 100, False
 
     # returns a list of cones that are close enough to the car. Based on the cone list en position of the car.
-    def __getVision(self):
+    def getVision(self):
+        # TODO: de positie van de kegels moet gegeven worden relatieve aan de positie van de auto (met de gsp of odom?)
         conesInRange = []
         for cone in self.cones:
             if math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2) <= self.lidarRange:
-                conesInRange.append(cone)
+                # calculate position (x,y,z) from the cone relative to the car
+                tempcone = Cone()
+                tempcone.location.x = cone.location.x - self.posX
+                tempcone.location.y = cone.location.y - self.posY
+                tempcone.location.z = cone.location.z - self.posZ
+                tempcone.color = cone.color
+                conesInRange.append(tempcone)
         return conesInRange
+
     
     def conesCallback(self, msg):
-        self.cones = msg.track            
+        self.cones = msg.track
+        for cone in self.cones:
+            print(cone.color)
     
     def odomCallback(self, msg):
-        # update the variables
         self.posX = msg.pose.pose.position.x
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
 
     def imuCallback(self, msg):
-        print("orientation" , msg.orientation.x, msg.orientation.y,msg.orientation.z, msg.orientation.w)
-        print("angular vel" , msg.angular_velocity.x, msg.angular_velocity.y,msg.angular_velocity.z)
-        print("linear acc" , msg.linear_acceleration.x, msg.linear_acceleration.y,msg.linear_acceleration.z)
+        self.orX = msg.orientation.x
+        self.orY = msg.orientation.y
+        self.orZ = msg.orientation.z
+        self.orW = msg.orientation.w
+        self.laX = msg.linear_acceleration.x
+        self.laY = msg.linear_acceleration.y
+        self.laZ = msg.linear_acceleration.z
+        self.avX = msg.angular_velocity.x
+        self.avY = msg.angular_velocity.y
+        self.avZ = msg.angular_velocity.z
         
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    rospy.spin() # deze zal er uitijndelijk uit moeten
+    while True:
+        conesClose = simulationWrapper.getVision()
+        print(len(conesClose))
+        x = []
+        y = []
+        for cone in conesClose:
+            x.append(cone.location.x)
+            y.append(cone.location.y)
+        plt.scatter(x, y)
+        plt.scatter(0, 0)
+        plt.savefig('vision.jpg')
+        plt.close()
+        time.sleep(5)
+    #rospy.spin() # deze zal er uitijndelijk uit moeten
