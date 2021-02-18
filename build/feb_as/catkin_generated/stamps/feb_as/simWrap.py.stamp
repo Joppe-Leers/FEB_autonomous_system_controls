@@ -6,6 +6,7 @@ from fs_msgs.msg import ControlCommand
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from fs_msgs.msg import Cone
+from fs_msgs.srv import Reset
 
 import matplotlib
 matplotlib.use('Agg')
@@ -60,6 +61,13 @@ class SimWrap:
     # reset the environment
     def reset(self):
         print("reset")
+        rospy.wait_for_service('/fsds/reset')
+        try:
+            reset = rospy.ServiceProxy('/fsds/reset', Reset)
+            reset(True)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+        
         # TODO herinitialiseer alle variabelen
         # TODO ros service reset om de auto terug op de startpositie te krijgen en de simulator te resetten
         
@@ -108,4 +116,10 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
+    count = 0
+    while count <=200:
+        count+=1
+        simulationWrapper.step([-1,0.5,0])
+        time.sleep(0.1)
+    simulationWrapper.reset()
     rospy.spin() # deze zal er uitijndelijk uit moeten

@@ -6,6 +6,7 @@ from fs_msgs.msg import ControlCommand
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from fs_msgs.msg import Cone
+from fs_msgs.srv import Reset
 
 import matplotlib
 matplotlib.use('Agg')
@@ -59,9 +60,28 @@ class SimWrap:
 
     # reset the environment
     def reset(self):
-        print("reset")
-        # TODO herinitialiseer alle variabelen
-        # TODO ros service reset om de auto terug op de startpositie te krijgen en de simulator te resetten
+        # reset the simulator using service /fsds/reset
+        rospy.wait_for_service('/fsds/reset')
+        try:
+            reset = rospy.ServiceProxy('/fsds/reset', Reset)
+            reset(True)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
+        # reinitialize class parameters
+        self.posX = 0.0
+        self.posY = 0.0
+        self.posZ = 0.0
+        self.orX = 0.0
+        self.orY = 0.0
+        self.orZ = 0.0
+        self.orW = 0.0
+        self.laX = 0.0
+        self.laY = 0.0
+        self.laZ = 0.0
+        self.avX = 0.0
+        self.avY = 0.0
+        self.avZ = 0.0
         
     # calculate the reward the car got based on the track map en the position of the car
     def reward(self):
@@ -108,4 +128,10 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
+    count = 0
+    while count <=200:
+        count+=1
+        simulationWrapper.step([-1,0.5,0])
+        time.sleep(0.1)
+    simulationWrapper.reset()
     rospy.spin() # deze zal er uitijndelijk uit moeten
