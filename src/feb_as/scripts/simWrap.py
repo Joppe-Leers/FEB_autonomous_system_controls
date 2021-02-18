@@ -49,38 +49,18 @@ class SimWrap:
         return 100
 
     # returns a list of cones that are close enough to the car. Based on the cone list en position of the car.
-    def getVision(self): # TODO deze zal uitijndelijk private moeten worden maar heb hem public gemaakt om te testen
-        print("get vision")
+    def __getVision(self):
         conesInRange = []
-        #count = 0
         for cone in self.cones:
-            #count += 1
             if math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2) <= self.lidarRange:
-                print(math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2))
                 conesInRange.append(cone)
-            #print("cheking distance cone " + str(count) + ": " + str(math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posZ)**2)))
         return conesInRange
 
     def conesCallback(self, msg):
-        self.cones = msg.track
-        # TODO vorm de positie van de kegels om naar het formaat die gebruikt kan worden in de reward functie (twee lijnen -> blokken) Alec is met deze functie bezig
-        
-##        x = []
-##        y = []
-##        for cone in self.cones:
-##            print(cone.location.x , cone.location.y)
-##            x.append(cone.location.x)
-##            y.append(cone.location.y)
-##        print("###########################################")
-##        for i in range(0, len(x)):
-##            print(x[i], y[i])
-##        plt.scatter(x, y)
-##        plt.savefig('cones.jpg')
-            
+        self.cones = msg.track            
     
     def odomCallback(self, msg):
         # update the variables
-        #print(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z)
         self.posX = msg.pose.pose.position.x
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
@@ -92,19 +72,4 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    while True:
-        conesClose = simulationWrapper.getVision()
-        print(len(conesClose))
-        x = []
-        y = []
-        for cone in conesClose:
-            x.append(cone.location.x)
-            y.append(cone.location.y)
-        plt.scatter(x, y)
-        plt.scatter(simulationWrapper.posX, simulationWrapper.posY)
-        plt.savefig('vision.jpg')
-        plt.close()
-        time.sleep(5)
-        
-        #simulationWrapper.getVision()
-    #rospy.spin() # deze zal er uitijndelijk uit moeten
+    rospy.spin() # deze zal er uitijndelijk uit moeten
