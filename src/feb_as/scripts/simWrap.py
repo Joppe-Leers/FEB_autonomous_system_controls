@@ -21,21 +21,13 @@ class SimWrap:
         self.lidarRange = lidarRange
         self.lidarAngle = lidarAngle
         self.pub = 0
-        # postition is used or the reward scores
-        self.posX = 0.0
-        self.posY = 0.0
-        self.posZ = 0.0
+        # postition is used for the reward scores and
+        self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
+         
         # orientation (or), linear_acceleration (la) and angular_velocity (av) is used for the state of the car
-        self.orX = 0.0
-        self.orY = 0.0
-        self.orZ = 0.0
-        self.orW = 0.0
-        self.laX = 0.0
-        self.laY = 0.0
-        self.laZ = 0.0
-        self.avX = 0.0
-        self.avY = 0.0
-        self.avZ = 0.0
+        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0      
+        self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
+        self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
         
     # initialize the ros node that receives the sensor information and sends control commands
     def init(self):
@@ -69,19 +61,10 @@ class SimWrap:
             print("Service call failed: %s"%e)
 
         # reinitialize class parameters
-        self.posX = 0.0
-        self.posY = 0.0
-        self.posZ = 0.0
-        self.orX = 0.0
-        self.orY = 0.0
-        self.orZ = 0.0
-        self.orW = 0.0
-        self.laX = 0.0
-        self.laY = 0.0
-        self.laZ = 0.0
-        self.avX = 0.0
-        self.avY = 0.0
-        self.avZ = 0.0
+        self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
+        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0      
+        self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
+        self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
         
     # calculate the reward the car got based on the track map en the position of the car
     def reward(self):
@@ -128,10 +111,4 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    count = 0
-    while count <=200:
-        count+=1
-        simulationWrapper.step([-1,0.5,0])
-        time.sleep(0.1)
-    simulationWrapper.reset()
     rospy.spin() # deze zal er uitijndelijk uit moeten
