@@ -4,6 +4,7 @@ import math
 from fs_msgs.msg import Track
 from fs_msgs.msg import ControlCommand
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 
 import matplotlib
 matplotlib.use('Agg')
@@ -17,18 +18,15 @@ class SimWrap:
         self.posX = 0.0
         self.posY = 0.0
         self.posZ = 0.0
-        self.orX = 0.0
-        self.orY = 0.0
-        self.orZ = 0.0
-        self.orW = 0.0
         self.cones = []
         self.lidarRange = lidarRange
         
 
     def init(self):
-        rospy.init_node('listener', anonymous=True, disable_signals=True)
+        rospy.init_node('FEB_autonomous_system', anonymous=True, disable_signals=True)
         rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)        
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
+        rospy.Subscriber("/fsds/imu", Imu, self.imuCallback)
     
     # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
@@ -55,7 +53,7 @@ class SimWrap:
             if math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2) <= self.lidarRange:
                 conesInRange.append(cone)
         return conesInRange
-
+    
     def conesCallback(self, msg):
         self.cones = msg.track            
     
@@ -64,10 +62,11 @@ class SimWrap:
         self.posX = msg.pose.pose.position.x
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
-        self.orX = msg.pose.pose.orientation.x
-        self.orY = msg.pose.pose.orientation.y
-        self.orZ = msg.pose.pose.orientation.z
-        self.orW = msg.pose.pose.orientation.w
+
+    def imuCallback(self, msg):
+        print("orientation" , msg.orientation.x, msg.orientation.y,msg.orientation.z, msg.orientation.w)
+        print("angular vel" , msg.angular_velocity.x, msg.angular_velocity.y,msg.angular_velocity.z)
+        print("linear acc" , msg.linear_acceleration.x, msg.linear_acceleration.y,msg.linear_acceleration.z)
         
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
