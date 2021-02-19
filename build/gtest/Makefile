@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/joppeleers/FEB_autonomous_system_controls/src
+CMAKE_SOURCE_DIR = /c/FEB_autonomous_system_controls/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build
+CMAKE_BINARY_DIR = /mnt/c/FEB_autonomous_system_controls/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -137,14 +137,14 @@ install/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/CMakeFiles /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/gtest/CMakeFiles/progress.marks
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build/CMakeFiles 0
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/FEB_autonomous_system_controls/build/CMakeFiles /mnt/c/FEB_autonomous_system_controls/build/gtest/CMakeFiles/progress.marks
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/FEB_autonomous_system_controls/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/clean
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/clean
 .PHONY : clean
 
 # The main clean target
@@ -154,17 +154,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/preinstall
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/preinstall
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(MAKE) -f CMakeFiles/Makefile2 gtest/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -191,6 +191,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /mnt/c/Users/joppe/Documents/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /mnt/c/FEB_autonomous_system_controls/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
