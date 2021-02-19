@@ -1,4 +1,4 @@
-prefix=/c/FEB_autonomous_system_controls/install
+prefix=/home/joppeleers/FEB_autonomous_system_controls/install
 
 Name: feb_as
 Description: Description of feb_as

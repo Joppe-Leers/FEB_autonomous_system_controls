@@ -291,12 +291,12 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    time.sleep(5)
+    #time.sleep(5)
     count = 0
-    while count <=200:
+    while count <=100:
         count += 1
         state, score, done = simulationWrapper.step([-1.0,0.5,0.0])
         print("step count: ", state , score, done)
         time.sleep(0.1)
-        
+    simulationWrapper.reset()   
     rospy.spin() # deze zal er uitijndelijk uit moeten

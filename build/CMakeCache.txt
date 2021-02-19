@@ -27,7 +27,7 @@ BUILD_SHARED_LIBS:BOOL=ON
 CATKIN_BLACKLIST_PACKAGES:STRING=
 
 //catkin devel space
-CATKIN_DEVEL_PREFIX:PATH=/c/FEB_autonomous_system_controls/devel
+CATKIN_DEVEL_PREFIX:PATH=/home/joppeleers/FEB_autonomous_system_controls/devel
 
 //Catkin enable testing
 CATKIN_ENABLE_TESTING:BOOL=ON
@@ -125,7 +125,7 @@ CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=OFF
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=/c/FEB_autonomous_system_controls/install
+CMAKE_INSTALL_PREFIX:PATH=/home/joppeleers/FEB_autonomous_system_controls/install
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=/usr/bin/ld
@@ -255,7 +255,7 @@ PYTHON_VERSION:STRING=2
 Project_BINARY_DIR:STATIC=/mnt/c/FEB_autonomous_system_controls/build
 
 //Value Computed by CMake
-Project_SOURCE_DIR:STATIC=/c/FEB_autonomous_system_controls/src
+Project_SOURCE_DIR:STATIC=/home/joppeleers/FEB_autonomous_system_controls/src
 
 //Path to a library.
 RT_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/librt.so
@@ -294,16 +294,16 @@ cpp_common_DIR:PATH=/opt/ros/melodic/share/cpp_common/cmake
 feb_as_BINARY_DIR:STATIC=/mnt/c/FEB_autonomous_system_controls/build/feb_as
 
 //Value Computed by CMake
-feb_as_SOURCE_DIR:STATIC=/c/FEB_autonomous_system_controls/src/feb_as
+feb_as_SOURCE_DIR:STATIC=/home/joppeleers/FEB_autonomous_system_controls/src/feb_as
 
 //Value Computed by CMake
 fs_msgs_BINARY_DIR:STATIC=/mnt/c/FEB_autonomous_system_controls/build/fs_msgs
 
 //The directory containing a CMake configuration file for fs_msgs.
-fs_msgs_DIR:PATH=/c/FEB_autonomous_system_controls/devel/share/fs_msgs/cmake
+fs_msgs_DIR:PATH=/home/joppeleers/FEB_autonomous_system_controls/devel/share/fs_msgs/cmake
 
 //Value Computed by CMake
-fs_msgs_SOURCE_DIR:STATIC=/c/FEB_autonomous_system_controls/src/fs_msgs
+fs_msgs_SOURCE_DIR:STATIC=/home/joppeleers/FEB_autonomous_system_controls/src/fs_msgs
 
 //The directory containing a CMake configuration file for gencpp.
 gencpp_DIR:PATH=/opt/ros/melodic/share/gencpp/cmake
@@ -388,7 +388,7 @@ message_runtime_DIR:PATH=/opt/ros/melodic/share/message_runtime/cmake
 publish_test_BINARY_DIR:STATIC=/mnt/c/FEB_autonomous_system_controls/build/publish_test
 
 //Value Computed by CMake
-publish_test_SOURCE_DIR:STATIC=/c/FEB_autonomous_system_controls/src/publish_test
+publish_test_SOURCE_DIR:STATIC=/home/joppeleers/FEB_autonomous_system_controls/src/publish_test
 
 //The directory containing a CMake configuration file for roscpp_serialization.
 roscpp_serialization_DIR:PATH=/opt/ros/melodic/share/roscpp_serialization/cmake
@@ -409,7 +409,7 @@ std_msgs_DIR:PATH=/opt/ros/melodic/share/std_msgs/cmake
 subscriber_test_BINARY_DIR:STATIC=/mnt/c/FEB_autonomous_system_controls/build/subscriber_test
 
 //Value Computed by CMake
-subscriber_test_SOURCE_DIR:STATIC=/c/FEB_autonomous_system_controls/src/subscriber_test
+subscriber_test_SOURCE_DIR:STATIC=/home/joppeleers/FEB_autonomous_system_controls/src/subscriber_test
 
 
 ########################
