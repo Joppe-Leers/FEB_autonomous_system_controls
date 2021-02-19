@@ -25,6 +25,7 @@ class SimWrap:
         self.lidarAngle = lidarAngle
         self.pub = 0
         self.amount_of_cones = 0
+        self.receivedTrack = False
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
          
@@ -36,7 +37,12 @@ class SimWrap:
     # initialize the ros node that receives the sensor information and sends control commands
     def init(self):
         rospy.init_node('FEB_autonomous_system', anonymous=True, disable_signals=True)
+
         rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)
+        # wait until simulation wrapper recieved the full track information
+        while not self.receivedTrack:
+            pass
+        
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.imuCallback)
         self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
@@ -233,7 +239,7 @@ class SimWrap:
         for _ in self.right_list:
             self.passed_cone_list.append(False)
         self.amount_of_cones = len(self.right_list)
-        print(self.amount_of_cones)
+        self.receivedTrack = True
         
     def odomCallback(self, msg):
         self.posX = msg.pose.pose.position.x
@@ -291,12 +297,11 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    time.sleep(5)
     count = 0
-    while count <=200:
+    while count <=100:
         count += 1
         state, score, done = simulationWrapper.step([-1.0,0.5,0.0])
-        print("step count: ", state , score, done)
+        #print("step count: ", state , score, done)
         time.sleep(0.1)
-        
+    simulationWrapper.reset()   
     rospy.spin() # deze zal er uitijndelijk uit moeten
