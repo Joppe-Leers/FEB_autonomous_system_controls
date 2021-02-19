@@ -44,9 +44,9 @@ class SimWrap:
         # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
         self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
-        #score, done = self.check_reward()
-        score = 100
-        done = False
+        score, done = self.check_reward()
+        #score = 100
+        #done = False
         # prepare next state
         # TODO: orientation hoort niet in de state te staan
         state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
@@ -180,12 +180,21 @@ class SimWrap:
 
 
         # get all coordinates
+        # TODO: check corner cases
         cone1 = self.right_list[closest_cone]
-        cone2 = self.right_list[closest_cone + 1]
-        cone3 = self.left_list[closest_cone + 1]
+        if closest_cone == self.amount_of_cones - 1:
+            cone2 = cone2 = self.right_list[0]
+            cone3 = self.left_list[0]
+        else:
+            cone2 = self.right_list[closest_cone + 1]
+            cone3 = self.left_list[closest_cone + 1]
         cone4 = self.left_list[closest_cone]
-        cone5 = self.right_list[closest_cone - 1]
-        cone6 = self.left_list[closest_cone - 1]
+        if closest_cone == 0:
+            cone5 = self.right_list[self.amount_of_cones - 1]
+            cone6 = self.left_list[self.amount_of_cones - 1]
+        else:
+            cone5 = self.right_list[closest_cone - 1]
+            cone6 = self.left_list[closest_cone - 1]
         x1 = cone1[0] ; y1 = cone1[1]
         x2 = cone2[0] ; y2 = cone2[1]
         x3 = cone3[0] ; y3 = cone3[1]
