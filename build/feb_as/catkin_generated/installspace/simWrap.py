@@ -36,7 +36,7 @@ class SimWrap:
     # initialize the ros node that receives the sensor information and sends control commands
     def init(self):
         rospy.init_node('FEB_autonomous_system', anonymous=True, disable_signals=True)
-        rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)        
+        rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.imuCallback)
         self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
@@ -44,7 +44,9 @@ class SimWrap:
         # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
         self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
-        score, done = self.check_reward()
+        #score, done = self.check_reward()
+        score = 100
+        done = False
         # prepare next state
         # TODO: orientation hoort niet in de state te staan
         state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
@@ -97,12 +99,11 @@ class SimWrap:
     def check_reward(self):
         print("")
         print("calculating reward for position: " + str((self.posX,self.posY)))
-        amount_of_cones = len(self.passed_cone_list)
         clear = False
-        if(self.passed_cone_list[amount_of_cones - 1] == True):
+        if(self.passed_cone_list[self.amount_of_cones - 1] == True):
             clear = True
         if(self.check_on_track()):
-            for i in range(amount_of_cones):
+            for i in range(self.amount_of_cones):
                 if clear == True:
                     self.passed_cone_list[i] = False
                 (m, q) = self.get_function_of_reward_line(i)
@@ -125,7 +126,7 @@ class SimWrap:
     # Returns the vertical distance of  #
     #  point (x,y) to the line mx+q.    #
     #####################################
-    def get_distance_to_line(m, q):
+    def get_distance_to_line(self, m, q):
         return self.posY - ((m*self.posX) + q)
 
     #####################################
@@ -135,7 +136,7 @@ class SimWrap:
     #  track (only counting one side).  #
     # mx+q                              #
     #####################################
-    def get_function_of_reward_line(line_index):
+    def get_function_of_reward_line(self, line_index):
         x1 = self.right_list[line_index][0]
         x2 = self.left_list[line_index][0]
         y1 = self.right_list[line_index][1]
@@ -144,10 +145,10 @@ class SimWrap:
         q = y2 - m*x2
         return (m, q)
 
-    def get_distance_to_cone(loc):
+    def get_distance_to_cone(self, loc):
         conex = loc[0]
         coney = loc[1]
-        return sqrt( (conex-self.posX)**2 + (coney-self.posY)**2 )
+        return math.sqrt( (conex-self.posX)**2 + (coney-self.posY)**2 )
 
     #####################################
     # Check whether the car is on or off#
@@ -157,7 +158,7 @@ class SimWrap:
     #  a cone (x_list, y_list), the car #
     #  is outside the track.            #
     #####################################
-    def check_on_track():
+    def check_on_track(self):
         distance_list = []
         in_square_list = []
         min_distance = 100.0
@@ -195,21 +196,21 @@ class SimWrap:
         # indicates whether (x,y) is to the left or to the right
         # credit: https://www.w3resource.com/python-exercises/basic/python-basic-1-exercise-40.php
         # first square: 1,2,3,4
-        c1 = (x2-x1)*(y-y1)-(y2-y1)*(x-x1) 
-        c2 = (x3-x2)*(y-y2)-(y3-y2)*(x-x2)
-        c3 = (x4-x3)*(y-y3)-(y4-y3)*(x-x3)
-        c4 = (x1-x4)*(y-y4)-(y1-y4)*(x-x4)
-        if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0):
+        c1 = (x2-x1)*(self.posY-y1)-(y2-y1)*(self.posX-x1) 
+        c2 = (x3-x2)*(self.posY-y2)-(y3-y2)*(self.posX-x2)
+        c3 = (x4-x3)*(self.posY-y3)-(y4-y3)*(self.posX-x3)
+        c4 = (x1-x4)*(self.posY-y4)-(y1-y4)*(self.posX-x4)
+        if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0): # TODO check if we kan drop the second condition
             in_square_list.append(True)
         else:
             in_square_list.append(False)
 
         # second square: 1,4,5,6
-        c1 = (x4-x1)*(y-y1)-(y4-y1)*(x-x1) 
-        c2 = (x6-x4)*(y-y4)-(y6-y4)*(x-x4)
-        c3 = (x5-x6)*(y-y6)-(y5-y6)*(x-x6)
-        c4 = (x1-x5)*(y-y5)-(y1-y5)*(x-x5)
-        if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0):
+        c1 = (x4-x1)*(self.posY-y1)-(y4-y1)*(self.posX-x1) 
+        c2 = (x6-x4)*(self.posY-y4)-(y6-y4)*(self.posX-x4)
+        c3 = (x5-x6)*(self.posY-y6)-(y5-y6)*(self.posX-x6)
+        c4 = (x1-x5)*(self.posY-y5)-(y1-y5)*(self.posX-x5)
+        if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0): # TODO check if we kan drop the second condition
             in_square_list.append(True)
         else:
             in_square_list.append(False)
@@ -232,6 +233,7 @@ class SimWrap:
         for _ in self.right_list:
             self.passed_cone_list.append(False)
         self.amount_of_cones = len(self.right_list)
+        print(self.amount_of_cones)
         
     def odomCallback(self, msg):
         self.posX = msg.pose.pose.position.x
@@ -255,7 +257,7 @@ class SimWrap:
     #   Left in blue, right in yellow.  #
     #####################################
     # This function is not used during training
-    def plot():
+    def plot(self):
         right_x_list = []
         left_x_list = []
         right_y_list = []
@@ -289,4 +291,12 @@ class SimWrap:
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
+    time.sleep(5)
+    count = 0
+    while count <=200:
+        count += 1
+        state, score, done = simulationWrapper.step([-1.0,0.5,0.0])
+        print("step count: ", state , score, done)
+        time.sleep(0.1)
+        
     rospy.spin() # deze zal er uitijndelijk uit moeten
