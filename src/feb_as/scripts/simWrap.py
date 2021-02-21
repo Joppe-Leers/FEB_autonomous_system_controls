@@ -16,7 +16,7 @@ import time
 
 class SimWrap:
     
-    def __init__(self, lidarRange=10, lidarAngle = 180):
+    def __init__(self, lidarRange=20, lidarAngle = 180):
         self.cones = []
         self.right_list = []
         self.left_list = []
@@ -25,6 +25,7 @@ class SimWrap:
         self.lidarAngle = lidarAngle
         self.pub = 0
         self.amount_of_cones = 0
+        self.receivedTrack = False
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
          
@@ -36,12 +37,17 @@ class SimWrap:
     # initialize the ros node that receives the sensor information and sends control commands
     def init(self):
         rospy.init_node('FEB_autonomous_system', anonymous=True, disable_signals=True)
+
         rospy.Subscriber("/fsds/testing_only/track", Track, self.conesCallback)
+        # wait until simulation wrapper recieved the full track information
+        while not self.receivedTrack:
+            pass
+        
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.imuCallback)
         self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
 
-        # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
+    # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
         self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         #score, done = self.check_reward()
@@ -75,19 +81,24 @@ class SimWrap:
 
     # returns a list of cones that are close enough to the car. Based on the cone list en position of the car.
     def getVision(self):
-        # TODO: enkel de kegels die binnen een bepaalde hoek zijn voor de auto terug geven
-        # TODO: orientation is eigenlijk alleen maar nodig 
         conesInRange = []
         for cone in self.cones:
             if math.sqrt((cone.location.x - self.posX)**2 + (cone.location.y - self.posY)**2) <= self.lidarRange:
-                # calculate position (x,y,z) from the cone relative to the car
-                tempcone = Cone()
-                tempcone.location.x = cone.location.x - self.posX
-                tempcone.location.y = cone.location.y - self.posY
-                tempcone.location.z = cone.location.z - self.posZ
-                tempcone.color = cone.color
-                conesInRange.append(tempcone)
-        return conesInRange
+                # calculate position (x,y,z) of cone and rotate relative to the car
+                vec = rotateVector([cone.location.x - self.posX,
+                                    cone.location.y - self.posY,
+                                    cone.location.z - self.posZ],
+                                   [self.orW, self.orX, self.orY, -self.orZ])
+                # back wing of feb's car blocks the vision behind the car for the lidar
+                # -> only the cones withing an angle of 180 degree in front of the car is seen
+                if vec[0] >= 0:
+                    tempcone = Cone()
+                    tempcone.location.x = vec[0]
+                    tempcone.location.y = vec[1]
+                    tempcone.location.z = vec[2]
+                    tempcone.color = cone.color
+                    conesInRange.append(tempcone)
+        return conesInRange    
 
     # calculate the reward the car got based on the track map en the position of the car
     #####################################
@@ -241,7 +252,7 @@ class SimWrap:
         for _ in self.right_list:
             self.passed_cone_list.append(False)
         self.amount_of_cones = len(self.right_list)
-        print(self.amount_of_cones)
+        self.receivedTrack = True
         
     def odomCallback(self, msg):
         self.posX = msg.pose.pose.position.x
@@ -295,16 +306,36 @@ class SimWrap:
 
         #plt.savefig('/mnt/c/FEB_autonomous_system_controls/cones.jpg')
         plt.savefig('cones.jpg')
+
+
+#################### EXTRA FUNCTIONS ####################
+# functions that rotates a 3D (vec) with the quaternion rotation vactor (q)
+def rotateVector(vec, q):
+    r = [0]+vec
+    q_conj = [q[0],-1*q[1],-1*q[2],-1*q[3]]
+    return quaternion_mult(quaternion_mult(q,r),q_conj)[1:]
+
+# hamilton product calculated the product between two quaternion
+def quaternion_mult(q,r):
+    return [r[0]*q[0]-r[1]*q[1]-r[2]*q[2]-r[3]*q[3],
+            r[0]*q[1]+r[1]*q[0]-r[2]*q[3]+r[3]*q[2],
+            r[0]*q[2]+r[1]*q[3]+r[2]*q[0]-r[3]*q[1],
+            r[0]*q[3]-r[1]*q[2]+r[2]*q[1]+r[3]*q[0]]
         
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
-    time.sleep(5)
-    count = 0
-    while count <=200:
-        count += 1
-        state, score, done = simulationWrapper.step([-1.0,0.5,0.0])
-        print("step count: ", state , score, done)
-        time.sleep(0.1)
-        
-    rospy.spin() # deze zal er uitijndelijk uit moeten
+    while True:
+        conesClose = simulationWrapper.getVision()
+        print(len(conesClose))
+        x = []
+        y = []
+        for cone in conesClose:
+            x.append(cone.location.x)
+            y.append(cone.location.y)
+        plt.scatter(x, y)
+        plt.scatter(0, 0)
+        plt.savefig('vision.jpg')
+        plt.close()
+        time.sleep(5)
+    #rospy.spin() # deze zal er uitijndelijk uit moeten

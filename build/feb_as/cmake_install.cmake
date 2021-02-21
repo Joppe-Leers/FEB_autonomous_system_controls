@@ -1,8 +1,8 @@
-# Install script for directory: /c/FEB_autonomous_system_controls/src/feb_as
+# Install script for directory: /home/joppeleers/FEB_autonomous_system_controls/src/feb_as
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/c/FEB_autonomous_system_controls/install")
+  set(CMAKE_INSTALL_PREFIX "/home/joppeleers/FEB_autonomous_system_controls/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -49,7 +49,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/feb_as" TYPE FILE FILES "/c/FEB_autonomous_system_controls/src/feb_as/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/feb_as" TYPE FILE FILES "/home/joppeleers/FEB_autonomous_system_controls/src/feb_as/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
