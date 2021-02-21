@@ -50,9 +50,9 @@ class SimWrap:
     # action must be in the format (steering, throttle, brake) : steering -1 to 1, throttle 0 to 1, brake 0 to 1
     def step(self, action):
         self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
-        #score, done = self.check_reward()
-        score = 100
-        done = False
+        score, done = self.check_reward()
+        #score = 100
+        #done = False
         # prepare next state
         # TODO: orientation hoort niet in de state te staan
         state = [self.orX, self.orY, self.orZ, self.orW, self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
@@ -325,7 +325,9 @@ def quaternion_mult(q,r):
 if __name__ == '__main__':
     simulationWrapper = SimWrap()
     simulationWrapper.init()
+    
     while True:
+        simulationWrapper.step([0, 1, 0])
         conesClose = simulationWrapper.getVision()
         print(len(conesClose))
         x = []
@@ -337,5 +339,5 @@ if __name__ == '__main__':
         plt.scatter(0, 0)
         plt.savefig('vision.jpg')
         plt.close()
-        time.sleep(5)
+        time.sleep(1)
     #rospy.spin() # deze zal er uitijndelijk uit moeten
