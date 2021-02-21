@@ -192,11 +192,19 @@ class SimWrap:
 
         # get all coordinates
         cone1 = self.right_list[closest_cone]
-        cone2 = self.right_list[closest_cone + 1]
-        cone3 = self.left_list[closest_cone + 1]
+        if closest_cone == self.amount_of_cones-1:
+            cone2 = self.right_list[0]
+            cone3 = self.left_list[0]
+        else:
+            cone2 = self.right_list[closest_cone + 1]
+            cone3 = self.left_list[closest_cone + 1]
         cone4 = self.left_list[closest_cone]
-        cone5 = self.right_list[closest_cone - 1]
-        cone6 = self.left_list[closest_cone - 1]
+        if closest_cone == 0:
+            cone5 = self.right_list[self.amount_of_cones-1]
+            cone6 = self.left_list[self.amount_of_cones-1]
+        else:
+            cone5 = self.right_list[closest_cone - 1]
+            cone6 = self.left_list[closest_cone - 1]
         x1 = cone1[0] ; y1 = cone1[1]
         x2 = cone2[0] ; y2 = cone2[1]
         x3 = cone3[0] ; y3 = cone3[1]

@@ -1,8 +1,8 @@
-# Install script for directory: /home/joppeleers/FEB_autonomous_system_controls/src
+# Install script for directory: /c/FEB_autonomous_system_controls/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/joppeleers/FEB_autonomous_system_controls/install")
+  set(CMAKE_INSTALL_PREFIX "/c/FEB_autonomous_system_controls/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -49,38 +49,38 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/_setup_util.py")
+   "/c/FEB_autonomous_system_controls/install/_setup_util.py")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE PROGRAM FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/_setup_util.py")
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE PROGRAM FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/_setup_util.py")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/env.sh")
+   "/c/FEB_autonomous_system_controls/install/env.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE PROGRAM FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/env.sh")
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE PROGRAM FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/env.sh")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/setup.bash;/home/joppeleers/FEB_autonomous_system_controls/install/local_setup.bash")
+   "/c/FEB_autonomous_system_controls/install/setup.bash;/c/FEB_autonomous_system_controls/install/local_setup.bash")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE FILE FILES
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/setup.bash"
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/local_setup.bash"
     )
@@ -88,14 +88,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/setup.sh;/home/joppeleers/FEB_autonomous_system_controls/install/local_setup.sh")
+   "/c/FEB_autonomous_system_controls/install/setup.sh;/c/FEB_autonomous_system_controls/install/local_setup.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE FILE FILES
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/setup.sh"
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/local_setup.sh"
     )
@@ -103,14 +103,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/setup.zsh;/home/joppeleers/FEB_autonomous_system_controls/install/local_setup.zsh")
+   "/c/FEB_autonomous_system_controls/install/setup.zsh;/c/FEB_autonomous_system_controls/install/local_setup.zsh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE FILE FILES
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/setup.zsh"
     "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/local_setup.zsh"
     )
@@ -118,14 +118,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/joppeleers/FEB_autonomous_system_controls/install/.rosinstall")
+   "/c/FEB_autonomous_system_controls/install/.rosinstall")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/joppeleers/FEB_autonomous_system_controls/install" TYPE FILE FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/.rosinstall")
+file(INSTALL DESTINATION "/c/FEB_autonomous_system_controls/install" TYPE FILE FILES "/mnt/c/FEB_autonomous_system_controls/build/catkin_generated/installspace/.rosinstall")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)

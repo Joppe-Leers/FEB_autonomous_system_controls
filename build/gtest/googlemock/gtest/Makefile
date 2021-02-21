@@ -48,7 +48,7 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/joppeleers/FEB_autonomous_system_controls/src
+CMAKE_SOURCE_DIR = /c/FEB_autonomous_system_controls/src
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /mnt/c/FEB_autonomous_system_controls/build
