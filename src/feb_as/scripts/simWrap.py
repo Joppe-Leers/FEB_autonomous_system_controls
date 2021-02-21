@@ -327,6 +327,7 @@ if __name__ == '__main__':
     simulationWrapper.init()
     
     while True:
+
         simulationWrapper.step([0, 1, 0])
         conesClose = simulationWrapper.getVision()
         print(len(conesClose))
