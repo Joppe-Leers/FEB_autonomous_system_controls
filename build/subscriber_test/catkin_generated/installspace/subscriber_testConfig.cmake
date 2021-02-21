@@ -67,14 +67,14 @@ set(subscriber_test_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(subscriber_test_SOURCE_PREFIX /c/FEB_autonomous_system_controls/src/subscriber_test)
-  set(subscriber_test_DEVEL_PREFIX /c/FEB_autonomous_system_controls/devel)
+  set(subscriber_test_SOURCE_PREFIX /home/joppeleers/FEB_autonomous_system_controls/src/subscriber_test)
+  set(subscriber_test_DEVEL_PREFIX /home/joppeleers/FEB_autonomous_system_controls/devel)
   set(subscriber_test_INSTALL_PREFIX "")
   set(subscriber_test_PREFIX ${subscriber_test_DEVEL_PREFIX})
 else()
   set(subscriber_test_SOURCE_PREFIX "")
   set(subscriber_test_DEVEL_PREFIX "")
-  set(subscriber_test_INSTALL_PREFIX /c/FEB_autonomous_system_controls/install)
+  set(subscriber_test_INSTALL_PREFIX /home/joppeleers/FEB_autonomous_system_controls/install)
   set(subscriber_test_PREFIX ${subscriber_test_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /c/FEB_autonomous_system_controls/install/lib;/opt/ros/melodic/lib)
+    foreach(path /home/joppeleers/FEB_autonomous_system_controls/install/lib;/home/joppeleers/FEB_autonomous_system_controls/devel/lib;/c/FEB_autonomous_system_controls/devel/lib;/opt/ros/melodic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

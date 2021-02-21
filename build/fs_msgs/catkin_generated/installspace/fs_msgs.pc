@@ -1,4 +1,4 @@
-prefix=/c/FEB_autonomous_system_controls/install
+prefix=/home/joppeleers/FEB_autonomous_system_controls/install
 
 Name: fs_msgs
 Description: Description of fs_msgs

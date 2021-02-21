@@ -1,4 +1,4 @@
-prefix=/c/FEB_autonomous_system_controls/devel
+prefix=/home/joppeleers/FEB_autonomous_system_controls/devel
 
 Name: publish_test
 Description: Description of publish_test
