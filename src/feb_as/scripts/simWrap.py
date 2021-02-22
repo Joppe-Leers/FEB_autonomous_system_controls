@@ -110,13 +110,13 @@ class SimWrap:
                                    [self.orW, self.orX, self.orY, -self.orZ])
                 # back wing of feb's car blocks the vision behind the car for the lidar
                 # -> only the cones within an angle of 180 degree in front of the car is seen
-##                if vec[0] >= 0:
-                tempcone = Cone()
-                tempcone.location.x = vec[0]
-                tempcone.location.y = vec[1]
-                tempcone.location.z = vec[2]
-                tempcone.color = cone.color
-                conesInRange.append(tempcone)
+                if vec[0] >= 0:
+                    tempcone = Cone()
+                    tempcone.location.x = vec[0]
+                    tempcone.location.y = vec[1]
+                    tempcone.location.z = vec[2]
+                    tempcone.color = cone.color
+                    conesInRange.append(tempcone)
         return conesInRange    
 
     def __check_reward(self):
@@ -324,13 +324,13 @@ def distance(p1,p2):
 
 
         
-##if __name__ == '__main__':
-##    simulationWrapper = SimWrap()
-##    simulationWrapper.init()
-##    
-##    while True:
-##        state, score, done = simulationWrapper.step([0, 1, 0])
-##        print("state: " + str(len(state)) + " score: " + str(score) + " done: " + str(done))
+if __name__ == '__main__':
+    simulationWrapper = SimWrap()
+    simulationWrapper.init()
+    
+    while True:
+        state, score, done = simulationWrapper.step([0, 1, 0])
+        print("state: " + str(len(state)) + " score: " + str(score) + " done: " + str(done))
 
 ##if __name__ == '__main__':
 ##    simulationWrapper = SimWrap()
@@ -343,20 +343,20 @@ def distance(p1,p2):
 ##        time.sleep(0.1)
 ##    simulationWrapper.reset()
 
-if __name__ == '__main__':
-    simulationWrapper = SimWrap()
-    simulationWrapper.init()
-    while True:
-        conesClose = simulationWrapper._SimWrap__getVision()
-        print(len(conesClose))
-        x = []
-        y = []
-        for cone in conesClose:
-            x.append(cone.location.x)
-            y.append(cone.location.y)
-        plt.scatter(x, y)
-        plt.scatter(0, 0)
-        plt.savefig('vision.jpg')
-        plt.close()
-        time.sleep(2)
+##if __name__ == '__main__':
+##    simulationWrapper = SimWrap()
+##    simulationWrapper.init()
+##    while True:
+##        conesClose = simulationWrapper._SimWrap__getVision()
+##        print(len(conesClose))
+##        x = []
+##        y = []
+##        for cone in conesClose:
+##            x.append(cone.location.x)
+##            y.append(cone.location.y)
+##        plt.scatter(x, y)
+##        plt.scatter(0, 0)
+##        plt.savefig('vision.jpg')
+##        plt.close()
+##        time.sleep(2)
 
