@@ -25,8 +25,9 @@ class SimWrap:
         self.cones = []
         self.lidarRange = lidarRange
         self.pub = 0
-        self.receivedTrack = False
+        self.receivedTrack = False 
         self.next_cone = 0
+
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
          
@@ -140,11 +141,6 @@ class SimWrap:
                     self.passed_cone_list[i] = False
                     if(i == self.amount_of_cones -1):
                         self.next_cone = 0
-##                dist = distance([self.right_list[i][0], self.right_list[i][1]], [self.posX, self.posY])
-##                if(dist < min_distance):
-##                    cone = i
-##            (m, q) = self.__get_function_of_reward_line(cone)
-##            distance = self.__get_distance_to_line(m, q)
             (m,q) = self.__get_function_of_reward_line(self.next_cone)
             distance = self.__get_distance_to_line(m, q)
             if abs(distance) < 0.5:    # if car is close to the line
@@ -351,6 +347,7 @@ if __name__ == '__main__':
         if score == -100:
             simulationWrapper.reset()
 
+
 ##if __name__ == '__main__':
 ##    simulationWrapper = SimWrap()
 ##    simulationWrapper.init()
@@ -378,3 +375,4 @@ if __name__ == '__main__':
 ##        plt.savefig('vision.jpg')
 ##        plt.close()
 ##        time.sleep(2)
+

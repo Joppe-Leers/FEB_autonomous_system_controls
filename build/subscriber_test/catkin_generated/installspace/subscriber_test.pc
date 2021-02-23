@@ -1,4 +1,4 @@
-prefix=/c/FEB_autonomous_system_controls/install
+prefix=/home/joppeleers/FEB_autonomous_system_controls/install
 
 Name: subscriber_test
 Description: Description of subscriber_test
