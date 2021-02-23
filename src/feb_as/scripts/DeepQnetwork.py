@@ -7,16 +7,13 @@ import numpy as np
 
 
 class DeepQnetwork:
-    def __init__(self, outputSize, learning_rate=0.001, frame_stack_num=3, ):
+    def __init__(self, outputSize, learning_rate=0.001, stateLenght=66):
+        print("DQN constructor")
         # Neural Net for Deep-Q learning Model
         self.model = Sequential()
-        self.model.add(
-            Conv2D(filters=6, kernel_size=(7, 7), strides=3, activation='relu', input_shape=(96, 96, frame_stack_num)))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Conv2D(filters=12, kernel_size=(4, 4), activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Flatten())
-        self.model.add(Dense(216, activation='relu'))
+        self.model.add(Dense(100, input_dim=stateLenght, activation='relu'))
+        self.model.add(Dense(100, activation='relu'))
+        self.model.add(Dense(100, activation='relu'))
         self.model.add(Dense(outputSize, activation=None))
         self.model.compile(loss='mean_squared_error', optimizer=Adam(lr=learning_rate, epsilon=1e-7))
 

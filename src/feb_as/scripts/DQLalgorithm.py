@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 
-import gym
+from simWrap import SimWrap
 import random
 import numpy as np
 from collections import deque
 from DeepQnetwork import DeepQnetwork
-from common_functions import process_state_image, generate_state_frame_stack_from_queue, plotLearning
+from common_functions import plotLearning
 
 
 class DQLalgotirhm:
     def __init__(self,
                  action_space=[
-                     (-1, 1, 0.2), (0, 1, 0.2), (1, 1, 0.2),
-                     (-1, 1, 0), (0, 1, 0), (1, 1, 0),
-                     (-1, 0, 0.2), (0, 0, 0.2), (1, 0, 0.2),
-                     (-1, 0, 0), (0, 0, 0), (1, 0, 0)
+                     (-1, 1, 0.2)   , (0, 1, 0.2)   , (1, 1, 0.2),
+                     (-1, 1, 0)     , (0, 1, 0)     , (1, 1, 0),
+                     (-1, 0, 0.2)   , (0, 0, 0.2)   , (1, 0, 0.2),
+                     (-1, 0, 0)     , (0, 0, 0)     , (1, 0, 0)
                  ],
-                 frame_stack_num=3,
+                 stateLenght=66,
                  memory_size=5000,
                  gamma=0.95,  # discount rate
                  epsilon=1.0,  # exploration rate
@@ -24,16 +24,17 @@ class DQLalgotirhm:
                  epsilon_decay=0.9999,
                  learning_rate=0.001
                  ):
+        print("DQLA constructor")
         self.action_space = action_space
-        self.frame_stack_num = frame_stack_num
+        self.stateLenght = stateLenght
         self.memory = deque(maxlen=memory_size)
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
         self.learning_rate = learning_rate
-        self.model = DeepQnetwork(len(self.action_space), self.learning_rate, self.frame_stack_num)
-        self.target_model = DeepQnetwork(len(self.action_space), self.learning_rate, self.frame_stack_num)
+        self.model = DeepQnetwork(len(self.action_space), self.learning_rate, self.stateLenght)
+        self.target_model = DeepQnetwork(len(self.action_space), self.learning_rate, self.stateLenght)
 
         self.episodeOffset = 0
 
@@ -68,8 +69,8 @@ class DQLalgotirhm:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-    #################### start training from the currently loaded model ####################
-    def continueTraining(self, fileName, episodeOffset, episodes, render, skipFrames, trainingBatchSize,
+    #################### start training from another loaded model ####################
+    def continueTraining(self, fileName, episodeOffset, episodes, skipFrames, trainingBatchSize,
                          updateTargetModelFreq, saveModelFreq, epsilon):
         self.episodeOffset = episodeOffset
         self.epsilon = epsilon
@@ -77,53 +78,39 @@ class DQLalgotirhm:
         self.model.loadModel(fileName)
         self.target_model.loadModel(fileName)
 
-        self.trainModel(episodes, render, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq)
+        self.trainModel(episodes, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq)
 
     #################### start training from the currently loaded model ####################
-    def trainModel(self, episodes, render, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq):
-        env = gym.make('CarRacing-v0')
-
+    def trainModel(self, episodes, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq):
+        simulationWrapper = SimWrap()
+        simulationWrapper.init()
+        print("init done")
         scores, eps_history = [], []
         for e in range(self.episodeOffset + 1, self.episodeOffset + episodes + 1):
-            init_state = env.reset()
-            init_state = process_state_image(init_state)
-            state_frame_stack_queue = deque([init_state] * self.frame_stack_num, maxlen=self.frame_stack_num)
-
+            simulationWrapper.reset()
+            currentState, _, _ = simulationWrapper.step([0,0,0])
+            
             total_reward = 0
             negative_reward_counter = 0
             time_frame_counter = 1
             done = False
 
             while True:
-                if render:
-                    env.render()
-
-                current_state_frame_stack = generate_state_frame_stack_from_queue(state_frame_stack_queue)
-                action = self.act(current_state_frame_stack)
+                action = self.act(currentState)
+                print(action)
 
                 reward = 0
                 for _ in range(skipFrames + 1):
-                    next_state, r, done, info = env.step(action)
+                    nextState, r, done = simulationWrapper.step(action)
                     reward += r
                     if done:
                         break
 
-                # If continually getting negative reward 10 times after the tolerance steps, terminate this episode
-                negative_reward_counter = negative_reward_counter + 1 if time_frame_counter > 100 and reward < 0 else 0
-
-                # Extra bonus for the model if it uses full gas
-                if action[1] == 1 and action[2] == 0:
-                    reward *= 1.5
-
                 total_reward += reward
 
-                next_state = process_state_image(next_state)
-                state_frame_stack_queue.append(next_state)
-                next_state_frame_stack = generate_state_frame_stack_from_queue(state_frame_stack_queue)
+                self.memorize(currentState, action, reward, nextState, done)
 
-                self.memorize(current_state_frame_stack, action, reward, next_state_frame_stack, done)
-
-                if done or negative_reward_counter >= 25 or total_reward < 0:
+                if done:
                     print(
                         'Episode: {}/{}, Scores(Time Frames): {}, Total Rewards(adjusted): {:.2}, Epsilon: {:.2}'.format(
                             e, self.episodeOffset + episodes, time_frame_counter, float(total_reward),
@@ -140,10 +127,10 @@ class DQLalgotirhm:
                 self.update_target_model()
 
             if e % saveModelFreq == 0:
-                self.target_model.saveModel('./save/trial_{}.h5'.format(e))
-            env.close()
+                self.target_model.saveModel('saves/trial_{}.h5'.format(e))
+            simulationWrapper.reset()
 
         x = [i + 1 for i in range(self.episodeOffset, self.episodeOffset + episodes)]
-        filename = 'CarRacing.png'
+        filename = 'trainingPlot.png'
         plotLearning(x, scores, eps_history, filename)
-        env.close()
+        simulationWrapper.reset()

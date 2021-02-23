@@ -17,15 +17,35 @@ import time
 class SimWrap:
     """Help of the simulationWrapper class
 
-    ...
-    ...
+    This class provides an easy to use interface to test deep reinforcement algorithms on the
+    Formula student driverless simulater. It folows the same structure as openAI gym uses
+    https://gym.openai.com/
+    
+    The class contains three main functions that must be used in the RL algorithm:
+    init()
+    state, score, done = step(action)
+    reset()
+    
+    See documentation in the methods itself for more information
+    
+    State:
+    The state is a list with length 3*maxConesInState + 6. Every cone in the vision of the car
+    is put in the list with its x, y value and the color. the six aditional features are for odometry data
+    
+    Score:
+    score is calculated in the get_reward method and...
+    
+    TODO: Alec geeft gij hier wat meer uitleg bij?
     """
     
-    def __init__(self, lidarRange=20):
+    def __init__(self, lidarRange=20, maxConesInState = 20):
+        print("symwrap constructor")
         self.cones = []
         self.lidarRange = lidarRange
         self.pub = 0
         self.receivedTrack = False
+        self.maxConesInState = maxConesInState
+        self.stateLenght = maxConesInState * 3 + 6
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
          
@@ -66,17 +86,19 @@ class SimWrap:
 
         Action must be in the format (steering, throttle, brake)  in ranges: steering -1 to 1, throttle 0 to 1, brake 0 to 1.
         Returns a tuple (state, score, done), indicating the new state of the car in its environment,
-        the score received for the step and whether or not the episode is finished or not. 
+        the score received for the step and whether or not the episode is finished. 
         """
 
         self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         score, done = self.__check_reward()
-        # TODO: prepare next state
-        state = [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
-        for cone in self.__getVision():
-            state.append(cone.location.x)
-            state.append(cone.location.y)
-            state.append(cone.color)
+        state = []
+        vision = self.__getVision()
+        for count in range(0,self.maxConesInState):
+            if count <= len(vision)-1:
+                state += [vision[count].location.x, vision[count].location.y, vision[count].color]
+            else:
+                state += [0,0,0]            
+        state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]        
             
         return state, score, done
 
@@ -324,39 +346,5 @@ def distance(p1,p2):
 
 
         
-if __name__ == '__main__':
-    simulationWrapper = SimWrap()
-    simulationWrapper.init()
-    
-    while True:
-        state, score, done = simulationWrapper.step([0, 1, 0])
-        print("state: " + str(len(state)) + " score: " + str(score) + " done: " + str(done))
 
-##if __name__ == '__main__':
-##    simulationWrapper = SimWrap()
-##    simulationWrapper.init()
-##    count = 0
-##    while count <= 50:
-##        count+=1
-##        print(count)
-##        simulationWrapper.step([-1, 1, 0])
-##        time.sleep(0.1)
-##    simulationWrapper.reset()
-
-##if __name__ == '__main__':
-##    simulationWrapper = SimWrap()
-##    simulationWrapper.init()
-##    while True:
-##        conesClose = simulationWrapper._SimWrap__getVision()
-##        print(len(conesClose))
-##        x = []
-##        y = []
-##        for cone in conesClose:
-##            x.append(cone.location.x)
-##            y.append(cone.location.y)
-##        plt.scatter(x, y)
-##        plt.scatter(0, 0)
-##        plt.savefig('vision.jpg')
-##        plt.close()
-##        time.sleep(2)
 
