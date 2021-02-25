@@ -10,10 +10,9 @@ from common_functions import plotLearning
 
 class DQLalgotirhm:
     def __init__(self,
-                 action_space=[
-                     (-1, 1, 0.2)   , (0, 1, 0.2)   , (1, 1, 0.2),
+                 action_space=[       (0, 1, 1)     ,
                      (-1, 1, 0)     , (0, 1, 0)     , (1, 1, 0),
-                     (-1, 0, 0.2)   , (0, 0, 0.2)   , (1, 0, 0.2),
+                     (-1, 0, 1)     , (0, 0, 1)     , (1, 0, 1),
                      (-1, 0, 0)     , (0, 0, 0)     , (1, 0, 0)
                  ],
                  stateLenght=66,
@@ -97,8 +96,6 @@ class DQLalgotirhm:
 
             while True:
                 action = self.act(currentState)
-                print(action)
-
                 reward = 0
                 for _ in range(skipFrames + 1):
                     nextState, r, done = simulationWrapper.step(action)
