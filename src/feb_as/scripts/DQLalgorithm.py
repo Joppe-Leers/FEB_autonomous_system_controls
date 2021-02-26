@@ -139,3 +139,50 @@ class DQLalgotirhm:
         filename = 'trainingPlot.png'
         plotLearning(x, scores, eps_history, filename)
         simulationWrapper.reset()
+        
+    #################### Test model ####################
+    def testModel(self, modelFile, episodes, skipFrames):
+        simulationWrapper = SimWrap()
+        simulationWrapper.init()
+        self.model.loadModel(modelFile)
+        for e in range(1, episodes+1):
+            print("episode: " + str(e))
+            simulationWrapper.reset()
+            total_reward = 0
+            negative_reward_counter = 0
+            time_frame_counter = 1
+            done = False
+            currentState, _, _ = simulationWrapper.step([0,0,0])
+            while True:
+                reward = 0
+                act_values = self.model.forward(currentState)
+                action_index = np.argmax(act_values[0])
+                
+                print(action_index)
+                print(self.action_space[action_index])
+              
+                for _ in range(skipFrames + 1):
+                    nextState, r, done = simulationWrapper.step(self.action_space[action_index])
+                    reward += r
+                    if done:
+                        break
+                total_reward += reward
+                if done:
+                    print('Episode: {}/{}, Scores(Time Frames): {}, Total Rewards(adjusted): {:.2}'.format(
+                            e, episodes, time_frame_counter, float(total_reward)))
+                    break
+                time_frame_counter += 1
+        simulationWrapper.reset()
+                    
+               
+                    
+                    
+            
+            
+            
+            
+            
+            
+            
+            
+            
