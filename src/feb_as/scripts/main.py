@@ -27,7 +27,7 @@ if __name__ == '__main__':
             x.append(cones[i])
             y.append(cones[i+1])
         plt.scatter(x, y)
-        plt.scatter(simulationWrapper.posX, simulationWrapper.posY)
+        plt.scatter(0, 0)
         plt.savefig('vision.jpg')
         plt.close()
         time.sleep(5)
