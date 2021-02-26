@@ -10,11 +10,9 @@ from common_functions import plotLearning
 
 class DQLalgotirhm:
     def __init__(self,
-                 action_space=[       (0, 1, 1)     ,
-                     (-1, 1, 0)     , (0, 1, 0)     , (1, 1, 0),
-                     (-1, 0, 1)     , (0, 0, 1)     , (1, 0, 1),
-                     (-1, 0, 0)     , (0, 0, 0)     , (1, 0, 0)
-                 ],
+                 action_space=[(-1, 1, 0)     , (0, 1, 0)     , (1, 1, 0),
+                                (-1, 0, 1)     , (0, 0, 1)     , (1, 0, 1),
+                                (-1, 0, 0)     , (0, 0, 0)     , (1, 0, 0)],
                  stateLenght=66,
                  memory_size=5000,
                  gamma=0.95,  # discount rate

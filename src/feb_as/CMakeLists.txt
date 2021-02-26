@@ -159,7 +159,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
-   scripts/simWrap.py scripts/main.py scripts/common_functions.py scripts/DeepQnetwork.py scripts/DQLalgorithm.py scripts/simWrapManualControl.py
+   scripts/simWrap.py scripts/main.py scripts/common_functions.py scripts/DeepQnetwork.py scripts/DQLalgorithm.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
