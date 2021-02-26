@@ -169,7 +169,7 @@ class SimWrapManualControl:
     def __check_on_track(self):
         """Checks whether the car is on or off the track. If car's position (x, y) is closer than 0.5m from the
         position of a cone (x_list, y_list), the car is outside the track, as the car is 0.5m wide on both sides."""
-        
+                
         distance_list = []
         in_square_list = []
         min_distance = 100.0
@@ -179,14 +179,30 @@ class SimWrapManualControl:
                 min_distance = distance_right
                 closest_cone = i
             if distance_right <= 0.5: # 0.5 is half the car width
+                print("################ close to right cone ################")
                 return False
-            distance_left = distance([self.left_list[i][0], self.right_list[i][1]], [self.posX, self.posY])
+            distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [self.posX, self.posY])
             if distance_left < min_distance:
                 min_distance = distance_left
                 closest_cone = i
             if distance_left <= 0.5:  # 0.5 is half the car width
+                print("################ close to left cone ################")
                 return False
-
+        
+        # x = []
+        # y = []
+        # for cone in self.right_list:
+            # x.append(cone[0])
+            # y.append(cone[1])
+        # plt.scatter(x, y)
+        # x = []
+        # y = []
+        # for cone in self.left_list:
+            # x.append(cone[0])
+            # y.append(cone[1])
+        # plt.scatter(x, y, color='red')
+        # plt.savefig('testTrack.jpg')
+        # plt.close()
 
         # get all coordinates
         cone1 = self.right_list[closest_cone]
@@ -235,10 +251,12 @@ class SimWrapManualControl:
         for i in range(2):
             if in_square_list[i] == True:
                 return True
+        #print("##################### outside track ###################")
         return False
 
     def __conesCallback(self, msg):
         """setup right/left cone list, passed cone list and other class variables."""
+        
         self.cones = msg.track
         for cone in self.cones:
             location = [cone.location.x, cone.location.y]
@@ -249,12 +267,13 @@ class SimWrapManualControl:
         for _ in self.right_list:
             self.passed_cone_list.append(False)
         self.amount_of_cones = len(self.right_list)
+        
         self.receivedTrack = True
 
     def __odomCallback(self, msg):
         """update car position"""
         
-        self.posX = msg.pose.pose.position.x
+        self.posX = msg.pose.pose.position.x + 1.98257 # Simulator has a bug that there is an offset of 1.98257 on the X-axis
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
 

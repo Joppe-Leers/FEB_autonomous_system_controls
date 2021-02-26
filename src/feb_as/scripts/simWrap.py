@@ -199,7 +199,7 @@ class SimWrap:
                 closest_cone = i
             if distance_right <= 0.5: # 0.5 is half the car width
                 return False
-            distance_left = distance([self.left_list[i][0], self.right_list[i][1]], [self.posX, self.posY])
+            distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [self.posX, self.posY])
             if distance_left < min_distance:
                 min_distance = distance_left
                 closest_cone = i
@@ -273,7 +273,7 @@ class SimWrap:
     def __odomCallback(self, msg):
         """update car position"""
         
-        self.posX = msg.pose.pose.position.x
+        self.posX = msg.pose.pose.position.x + 1.98257 # Simulator has a bug that there is an offset of 1.98257 on the X-axis
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
 

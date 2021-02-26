@@ -20,14 +20,13 @@ if __name__ == '__main__':
     while True:
         state, score, done = simulationWrapper.step()
         print("score: " + str(score) + " done: " + str(done) + " stateLenght: " + str(len(state)))
-        cones = state[:len(state)-6]
-        x = []
-        y = []
-        for i in range(0,len(cones),3):
-            x.append(cones[i])
-            y.append(cones[i+1])
-        plt.scatter(x, y)
-        plt.scatter(0, 0)
-        plt.savefig('vision.jpg')
-        plt.close()
-        time.sleep(5)
+        # cones = state[:len(state)-6]
+        # x = []
+        # y = []
+        # for i in range(0,len(cones),3):
+            # x.append(cones[i])
+            # y.append(cones[i+1])
+        # plt.scatter(x, y)
+        # plt.scatter(0, 0)
+        # plt.savefig('vision.jpg')
+        # plt.close()
