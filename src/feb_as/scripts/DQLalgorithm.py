@@ -105,8 +105,16 @@ class DQLalgotirhm:
 
                 total_reward += reward
 
-                self.memorize(currentState, action, reward, nextState, done)
+                if reward < 0:
+                    negative_reward_counter += 1
+                    if negative_reward_counter >= 100:
+                        reward = -100
+                        done = True
+                else:
+                    negative_reward_counter = 0
 
+                self.memorize(currentState, action, reward, nextState, done)
+                
                 if done:
                     print(
                         'Episode: {}/{}, Scores(Time Frames): {}, Total Rewards(adjusted): {:.2}, Epsilon: {:.2}'.format(
