@@ -14,19 +14,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-class SimWrap:
-    """Help of the simulationWrapper class
-
-    This class provides an easy to use interface to test deep reinforcement algorithms on the
-    Formula student driverless simulater. It folows the same structure as openAI gym uses
-    https://gym.openai.com/
+class SimWrapManualControl:
+    """Help of the simulationWrapper manual control class
     
-    The class contains three main functions that must be used in the RL algorithm:
-    init()
-    state, score, done = step(action)
-    reset()
     
-    See documentation in the methods itself for more information
     
     State:
     The state is a list with length 3*maxConesInState + 6. Every cone in the vision of the car
@@ -42,7 +33,6 @@ class SimWrap:
         print("symwrap constructor")
         self.cones = []
         self.lidarRange = lidarRange
-        self.pub = 0
         self.receivedTrack = False 
         self.next_cone = 0
         self.maxConesInState = maxConesInState
@@ -72,17 +62,9 @@ class SimWrap:
         
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.__odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.__imuCallback)
-        self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
 
-    def step(self, action):
-        """Takes a step, according to the input action.
+    def step(self):
 
-        Action must be in the format (steering, throttle, brake)  in ranges: steering -1 to 1, throttle 0 to 1, brake 0 to 1.
-        Returns a tuple (state, score, done), indicating the new state of the car in its environment,
-        the score received for the step and whether or not the episode is finished. 
-        """
-
-        self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         score, done = self.__check_reward()
         state = []
         vision = self.__getVision()
@@ -92,7 +74,6 @@ class SimWrap:
             else:
                 state += [0,0,0]            
         state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]        
-            
         return state, score, done
 
     def reset(self):
@@ -279,7 +260,7 @@ class SimWrap:
 
     def __imuCallback(self, msg):
         """update car orientation (or), linear_acceleration (la) and angular_velocity (av)"""
-        
+
         self.orX = msg.orientation.x
         self.orY = msg.orientation.y
         self.orZ = msg.orientation.z
