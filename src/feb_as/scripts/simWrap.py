@@ -38,7 +38,7 @@ class SimWrap:
     TODO: Alec geeft gij hier wat meer uitleg bij?
     """
     
-    def __init__(self, lidarRange=20, maxConesInState = 20):
+    def __init__(self, lidarRange=20, maxConesInState=20, manualControl=False):
         self.cones = []
         self.lidarRange = lidarRange
         self.pub = 0
@@ -46,6 +46,7 @@ class SimWrap:
         self.nextRewardline = 0
         self.maxConesInState = maxConesInState
         self.stateLenght = maxConesInState * 3 + 6
+        self.manualControl = manualControl
         
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
@@ -72,7 +73,8 @@ class SimWrap:
         
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.__odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.__imuCallback)
-        self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
+        if not self.manualControl:
+            self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
 
     def step(self, action):
         """Takes a step, according to the input action.
@@ -81,8 +83,9 @@ class SimWrap:
         Returns a tuple (state, score, done), indicating the new state of the car in its environment,
         the score received for the step and whether or not the episode is finished. 
         """
-
-        self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
+        
+        if not self.manualControl:
+            self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         score, done = self.__check_reward()
         state = []
         vision = self.__getVision()
