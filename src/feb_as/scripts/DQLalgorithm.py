@@ -97,6 +97,7 @@ class DQLalgotirhm:
                 reward = 0
                 for _ in range(skipFrames + 1):
                     nextState, r, done = simulationWrapper.step(action)
+                    print("state: " + str(len(nextState)) + " r: " + str(r) + " done: " + str(done))
                     reward += r
                     if done:
                         break

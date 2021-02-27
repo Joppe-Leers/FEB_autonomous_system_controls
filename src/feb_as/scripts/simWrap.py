@@ -43,7 +43,7 @@ class SimWrap:
         self.lidarRange = lidarRange
         self.pub = 0
         self.receivedTrack = False 
-        self.next_cone = 0
+        self.nextRewardline = 0
         self.maxConesInState = maxConesInState
         self.stateLenght = maxConesInState * 3 + 6
         
@@ -57,7 +57,7 @@ class SimWrap:
         
         self.right_list = []
         self.left_list = []
-        self.passed_cone_list = [] # boolean list: True = car has passed this cone
+        self.passed_rewardlines = [] # list of [passedRewardline(boolean), claimedReward(boolean)]
         self.amount_of_cones = 0
         
     def init(self):
@@ -113,8 +113,8 @@ class SimWrap:
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
 
         for i in range(self.amount_of_cones):
-            self.passed_cone_list[i] = False
-            self.next_cone = 0
+            self.passed_rewardlines[i] = [False, False]
+        self.nextRewardline = 0
 
     def __getVision(self):
         """Returns a list of cones that are inside the lidar range (a class parameter). It calculates this based on the cone list en position of the car."""
@@ -136,36 +136,29 @@ class SimWrap:
                     tempcone.location.z = vec[2]
                     tempcone.color = cone.color
                     conesInRange.append(tempcone)
-        return conesInRange    
+        return conesInRange
 
     def __check_reward(self):
         """Calculates the reward the car got based on the track map and the position of the car
-        Returns True if the car is close to a reward line it hasn't passed yet.                             
-        Returns False otherwise."""
-        
-        clear = False
-        min_distance = 1000
-        cone = 0
-        if(self.passed_cone_list[self.amount_of_cones - 1] == True):
-            clear = True
+        Returns True, -100 if the car is outside the track.
+        Returns False, 100 if the car is close to a reward line.
+        Returns False, -1 otherwise."""
+
         if(self.__check_on_track()):
+            # check if agent hasn't claimed a reward yet
+            reward = 0
             for i in range(self.amount_of_cones):
-                if clear == True:
-                    self.passed_cone_list[i] = False
-                    if(i == self.amount_of_cones -1):
-                        self.next_cone = 0
-            (m,q) = self.__get_function_of_reward_line(self.next_cone)
-            distance = self.__get_distance_to_line(m, q)
-            if abs(distance) < 0.5:    # if car is close to the line
-                if self.passed_cone_list[self.next_cone] == False:
-                    # give reward
-                    self.passed_cone_list[self.next_cone] = True
-                    self.next_cone +=1
-                    return 100 , False
-            
-            return -1 , False
+                if self.passed_rewardlines[i][0] == True and self.passed_rewardlines[i][1] == False:
+                    self.passed_rewardlines[i][1] = True
+                    reward += 100
+                    if i == (self.amount_of_cones -1):
+                        return 200, True # track finished
+            if reward == 0:
+                return -1, False
+            else:
+                return reward, False       
         else:
-            return -100 , True
+            return -200 , True # off track
 
     def __get_distance_to_line(self, m, q):
         """Returns the vertical distance between the position of the car (self.posX, self.posY) and the line mx+q.
@@ -258,6 +251,7 @@ class SimWrap:
 
     def __conesCallback(self, msg):
         """setup right/left cone list, passed cone list and other class variables."""
+        
         self.cones = msg.track
         for cone in self.cones:
             location = [cone.location.x, cone.location.y]
@@ -266,7 +260,7 @@ class SimWrap:
             elif cone.color == 0:
                 self.left_list.append(location)
         for _ in self.right_list:
-            self.passed_cone_list.append(False)
+            self.passed_rewardlines.append([False,False]) # [passedRewardLine(boolean), claimedReward(boolean)]
         self.amount_of_cones = len(self.right_list)
         self.receivedTrack = True
 
@@ -276,6 +270,14 @@ class SimWrap:
         self.posX = msg.pose.pose.position.x + 1.98257 # Simulator bug: offset of 1.98257 on the X-axis
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
+        
+        # check if car is close to a rewardline it hasn't passed yet
+        m, q = self.__get_function_of_reward_line(self.nextRewardline)
+        distance = self.__get_distance_to_line(m, q)
+        if abs(distance) < 0.2:    # if car is close to the line
+            if self.passed_rewardlines[self.nextRewardline][0] == False:
+                self.passed_rewardlines[self.nextRewardline][0] = True
+                self.nextRewardline +=1
 
     def __imuCallback(self, msg):
         """update car orientation (or), linear_acceleration (la) and angular_velocity (av)"""
