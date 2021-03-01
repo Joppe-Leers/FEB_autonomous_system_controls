@@ -162,12 +162,12 @@ class SimWrap:
                 return reward, False       
         else:
             return -200 , True # off track
-
-    def __get_distance_to_line(self, m, q):
-        """Returns the vertical distance between the position of the car (self.posX, self.posY) and the line mx+q.
-        This is a faster calculation than the perpendicular distance"""
         
-        return self.posY - ((m*self.posX) + q)
+    def __get_distance_to_line(self, m, q):
+        """Returns the perpendicular distance between the position of the car (self.posX, self.posY) and the line mx+q."""
+        
+        root = math.sqrt(m**2 + 1)
+        return abs(m*self.posX - self.posY + q)/root
 
     def __get_function_of_reward_line(self, line_index):
         """Return the rico (m) and offset (q) of the reward line corresponding to the line between the line_index'th
