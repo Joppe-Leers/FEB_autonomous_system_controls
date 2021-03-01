@@ -46,6 +46,7 @@ class SimWrap:
         self.next_cone = 0
         self.maxConesInState = maxConesInState
         self.stateLenght = maxConesInState * 3 + 6
+        self.episode_length = 0
         
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
@@ -112,9 +113,12 @@ class SimWrap:
         self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
 
+        self.next_cone = 0
         for i in range(self.amount_of_cones):
             self.passed_cone_list[i] = False
-            self.next_cone = 0
+
+        self.episode_length = 0
+            
 
     def __getVision(self):
         """Returns a list of cones that are inside the lidar range (a class parameter). It calculates this based on the cone list en position of the car."""
@@ -146,6 +150,9 @@ class SimWrap:
         clear = False
         min_distance = 1000
         cone = 0
+        self.episode_length += 1
+        if self.episode_length > 450:
+            return -10, True
         if(self.passed_cone_list[self.amount_of_cones - 1] == True):
             clear = True
         if(self.__check_on_track()):
@@ -156,22 +163,23 @@ class SimWrap:
                         self.next_cone = 0
             (m,q) = self.__get_function_of_reward_line(self.next_cone)
             distance = self.__get_distance_to_line(m, q)
-            if abs(distance) < 0.5:    # if car is close to the line
+            if abs(distance) < 3:    # if car is close to the line
                 if self.passed_cone_list[self.next_cone] == False:
                     # give reward
                     self.passed_cone_list[self.next_cone] = True
                     self.next_cone +=1
-                    return 100 , False
+                    print("Have a cookie!")
+                    return 5 , False
             
-            return -1 , False
+            return -0.3 , False
         else:
-            return -100 , True
+            return -10 , True
 
     def __get_distance_to_line(self, m, q):
-        """Returns the vertical distance between the position of the car (self.posX, self.posY) and the line mx+q.
-        This is a faster calculation than the perpendicular distance"""
+        """Returns the perpendicular distance between the position of the car (self.posX, self.posY) and the line mx+q."""
         
-        return self.posY - ((m*self.posX) + q)
+        root = math.sqrt(m**2 + 1)
+        return abs(m*self.posX - self.posY + q)/root
 
     def __get_function_of_reward_line(self, line_index):
         """Return the rico (m) and offset (q) of the reward line corresponding to the line between the line_index'th
@@ -197,13 +205,13 @@ class SimWrap:
             if distance_right < min_distance:
                 min_distance = distance_right
                 closest_cone = i
-            if distance_right <= 0.5: # 0.5 is half the car width
+            if distance_right <= 0.7: # 0.5 is half the car width
                 return False
             distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [self.posX, self.posY])
             if distance_left < min_distance:
                 min_distance = distance_left
                 closest_cone = i
-            if distance_left <= 0.5:  # 0.5 is half the car width
+            if distance_left <= 0.7:  # 0.5 is half the car width
                 return False
 
 
@@ -265,6 +273,15 @@ class SimWrap:
                 self.right_list.append(location)
             elif cone.color == 0:
                 self.left_list.append(location)
+        for _ in range(2):
+            for i in range(0, len(self.right_list), 2):
+                avg_loc_right = [(self.right_list[i][0] + self.right_list[i+1][0])/2,
+                           (self.right_list[i][1] + self.right_list[i+1][1])/2]
+                avg_loc_left = [(self.left_list[i][0] + self.left_list[i+1][0])/2,
+                           (self.left_list[i][1] + self.left_list[i+1][1])/2]
+                self.right_list.insert(i+1, avg_loc_right)
+                self.left_list.insert(i+1, avg_loc_left)
+        
         for _ in self.right_list:
             self.passed_cone_list.append(False)
         self.amount_of_cones = len(self.right_list)
