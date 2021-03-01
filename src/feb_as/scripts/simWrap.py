@@ -20,47 +20,48 @@ class SimWrap:
     This class provides an easy to use interface to test deep reinforcement algorithms on the
     Formula student driverless simulater. It folows the same structure as openAI gym uses
     https://gym.openai.com/
-    
+
     The class contains three main functions that must be used in the RL algorithm:
     init()
     state, score, done = step(action)
     reset()
-    
+
     See documentation in the methods itself for more information
-    
+
     State:
     The state is a list with length 3*maxConesInState + 6. Every cone in the vision of the car
     is put in the list with its x, y value and the color. the six aditional features are for odometry data
-    
+
     Score:
     score is calculated in the get_reward method and...
-    
+
     TODO: Alec geeft gij hier wat meer uitleg bij?
     """
-    
+
     def __init__(self, lidarRange=20, maxConesInState=20, manualControl=False):
         self.cones = []
         self.lidarRange = lidarRange
         self.pub = 0
-        self.receivedTrack = False 
+        self.receivedTrack = False
         self.nextRewardline = 0
         self.maxConesInState = maxConesInState
         self.stateLenght = maxConesInState * 3 + 6
         self.manualControl = manualControl
-        
+        self.episode_length = 0
+
         # postition is used for the reward scores and
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
-         
+
         # orientation (or), linear_acceleration (la) and angular_velocity (av) is used for the state of the car
-        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0      
+        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0
         self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
-        
+
         self.right_list = []
         self.left_list = []
         self.passed_rewardlines = [] # list of [passedRewardline(boolean), claimedReward(boolean)]
         self.amount_of_cones = 0
-        
+
     def init(self):
         """Initialises the ROS node that receives the sensor information and sends control commands and subscribe on the right topics."""
 
@@ -70,7 +71,7 @@ class SimWrap:
         # wait until simulation wrapper recieved the full track information
         while not self.receivedTrack:
             pass
-        
+
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.__odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.__imuCallback)
         if not self.manualControl:
@@ -81,9 +82,9 @@ class SimWrap:
 
         Action must be in the format (steering, throttle, brake)  in ranges: steering -1 to 1, throttle 0 to 1, brake 0 to 1.
         Returns a tuple (state, score, done), indicating the new state of the car in its environment,
-        the score received for the step and whether or not the episode is finished. 
+        the score received for the step and whether or not the episode is finished.
         """
-        
+
         if not self.manualControl:
             self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         score, done = self.__check_reward()
@@ -93,14 +94,14 @@ class SimWrap:
             if count <= len(vision)-1:
                 state += [vision[count].location.x, vision[count].location.y, vision[count].color]
             else:
-                state += [0,0,0]            
-        state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]        
-            
+                state += [0,0,0]
+        state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
+
         return state, score, done
 
     def reset(self):
         """Resets the environment. The simulator will be reset and some parameters will be reinitialised."""
-        
+
         # reset the simulator using service /fsds/reset
         rospy.wait_for_service('/fsds/reset')
         try:
@@ -111,17 +112,19 @@ class SimWrap:
 
         # reinitialize class parameters
         self.posX = 0.0 ; self.posY = 0.0 ; self.posZ = 0.0
-        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0      
+        self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0
         self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
 
+        self.next_cone = 0
         for i in range(self.amount_of_cones):
             self.passed_rewardlines[i] = [False, False]
         self.nextRewardline = 0
+        self.episode_length = 0
 
     def __getVision(self):
         """Returns a list of cones that are inside the lidar range (a class parameter). It calculates this based on the cone list en position of the car."""
-        
+
         conesInRange = []
         for cone in self.cones:
             if distance([cone.location.x, cone.location.y], [self.posX, self.posY]) <= self.lidarRange:
@@ -147,6 +150,10 @@ class SimWrap:
         Returns False, 100 if the car is close to a reward line.
         Returns False, -1 otherwise."""
 
+        self.episode_length += 1
+        if self.episode_length > 450:
+            return -10, True
+
         if(self.__check_on_track()):
             # check if agent hasn't claimed a reward yet
             reward = 0
@@ -159,20 +166,20 @@ class SimWrap:
             if reward == 0:
                 return -1, False
             else:
-                return reward, False       
+                return reward, False
         else:
             return -200 , True # off track
-        
+
     def __get_distance_to_line(self, m, q):
         """Returns the perpendicular distance between the position of the car (self.posX, self.posY) and the line mx+q."""
-        
+
         root = math.sqrt(m**2 + 1)
         return abs(m*self.posX - self.posY + q)/root
 
     def __get_function_of_reward_line(self, line_index):
         """Return the rico (m) and offset (q) of the reward line corresponding to the line between the line_index'th
         cones on the left and right side of the track."""
-        
+
         x1 = self.right_list[line_index][0]
         x2 = self.left_list[line_index][0]
         y1 = self.right_list[line_index][1]
@@ -184,7 +191,7 @@ class SimWrap:
     def __check_on_track(self):
         """Checks whether the car is on or off the track. If car's position (x, y) is closer than 0.5m from the
         position of a cone (x_list, y_list), the car is outside the track, as the car is 0.5m wide on both sides."""
-        
+
         distance_list = []
         in_square_list = []
         min_distance = 100.0
@@ -193,13 +200,13 @@ class SimWrap:
             if distance_right < min_distance:
                 min_distance = distance_right
                 closest_cone = i
-            if distance_right <= 0.5: # 0.5 is half the car width
+            if distance_right <= 0.7: # 0.5 is half the car width
                 return False
             distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [self.posX, self.posY])
             if distance_left < min_distance:
                 min_distance = distance_left
                 closest_cone = i
-            if distance_left <= 0.5:  # 0.5 is half the car width
+            if distance_left <= 0.7:  # 0.5 is half the car width
                 return False
 
 
@@ -228,7 +235,7 @@ class SimWrap:
         # indicates whether (x,y) is to the left or to the right
         # credit: https://www.w3resource.com/python-exercises/basic/python-basic-1-exercise-40.php
         # first square: 1,2,3,4
-        c1 = (x2-x1)*(self.posY-y1)-(y2-y1)*(self.posX-x1) 
+        c1 = (x2-x1)*(self.posY-y1)-(y2-y1)*(self.posX-x1)
         c2 = (x3-x2)*(self.posY-y2)-(y3-y2)*(self.posX-x2)
         c3 = (x4-x3)*(self.posY-y3)-(y4-y3)*(self.posX-x3)
         c4 = (x1-x4)*(self.posY-y4)-(y1-y4)*(self.posX-x4)
@@ -238,7 +245,7 @@ class SimWrap:
             in_square_list.append(False)
 
         # second square: 1,4,5,6
-        c1 = (x4-x1)*(self.posY-y1)-(y4-y1)*(self.posX-x1) 
+        c1 = (x4-x1)*(self.posY-y1)-(y4-y1)*(self.posX-x1)
         c2 = (x6-x4)*(self.posY-y4)-(y6-y4)*(self.posX-x4)
         c3 = (x5-x6)*(self.posY-y6)-(y5-y6)*(self.posX-x6)
         c4 = (x1-x5)*(self.posY-y5)-(y1-y5)*(self.posX-x5)
@@ -254,7 +261,7 @@ class SimWrap:
 
     def __conesCallback(self, msg):
         """setup right/left cone list, passed cone list and other class variables."""
-        
+
         self.cones = msg.track
         for cone in self.cones:
             location = [cone.location.x, cone.location.y]
@@ -262,6 +269,15 @@ class SimWrap:
                 self.right_list.append(location)
             elif cone.color == 0:
                 self.left_list.append(location)
+        for _ in range(2):
+            for i in range(0, len(self.right_list), 2):
+                avg_loc_right = [(self.right_list[i][0] + self.right_list[i+1][0])/2,
+                           (self.right_list[i][1] + self.right_list[i+1][1])/2]
+                avg_loc_left = [(self.left_list[i][0] + self.left_list[i+1][0])/2,
+                           (self.left_list[i][1] + self.left_list[i+1][1])/2]
+                self.right_list.insert(i+1, avg_loc_right)
+                self.left_list.insert(i+1, avg_loc_left)
+
         for _ in self.right_list:
             self.passed_rewardlines.append([False,False]) # [passedRewardLine(boolean), claimedReward(boolean)]
         self.amount_of_cones = len(self.right_list)
@@ -269,11 +285,11 @@ class SimWrap:
 
     def __odomCallback(self, msg):
         """update car position"""
-        
+
         self.posX = msg.pose.pose.position.x + 1.98257 # Simulator bug: offset of 1.98257 on the X-axis
         self.posY = msg.pose.pose.position.y
         self.posZ = msg.pose.pose.position.z
-        
+
         # check if car is close to a rewardline it hasn't passed yet
         m, q = self.__get_function_of_reward_line(self.nextRewardline)
         distance = self.__get_distance_to_line(m, q)
@@ -284,7 +300,7 @@ class SimWrap:
 
     def __imuCallback(self, msg):
         """update car orientation (or), linear_acceleration (la) and angular_velocity (av)"""
-        
+
         self.orX = msg.orientation.x
         self.orY = msg.orientation.y
         self.orZ = msg.orientation.z
@@ -299,7 +315,7 @@ class SimWrap:
     def plot(self):
         """Plots the boundaries of the track. Left in blue, right in yellow.
         This function is not used during training, merely for documentation purposes."""
-        
+
         right_x_list = []
         left_x_list = []
         right_y_list = []
@@ -311,7 +327,7 @@ class SimWrap:
         for loc in self.left_list:
             left_x_list.append(loc[0])
             left_y_list.append(loc[1])
-            
+
         # Add first cone again to complete the "circle"
         right_x_list.append(right_x_list[0])
         left_x_list.append(left_x_list[0])
@@ -333,7 +349,7 @@ class SimWrap:
 
 def rotateVector(vec, q):
     """Rotates a 3D (vec) with the quaternion rotation vector (q)."""
-    
+
     r = [0]+vec
     q_conj = [q[0],-1*q[1],-1*q[2],-1*q[3]]
     return hamiltonProduct(hamiltonProduct(q,r),q_conj)[1:]
@@ -349,6 +365,5 @@ def hamiltonProduct(q,r):
 
 def distance(p1,p2):
     """calculate distance between [x1,y1] and [x2, y2]"""
-    
-    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
+    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
