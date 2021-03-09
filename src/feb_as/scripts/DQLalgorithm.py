@@ -8,12 +8,12 @@ from DeepQnetwork import DeepQnetwork
 from common_functions import plotLearning
 
 
-class DQLalgotirhm:
+class DQLalgorithm:
     def __init__(self,
                  action_space=[(-1, 1, 0)     , (0, 1, 0)     , (1, 1, 0),
                                 (-1, 0, 1)     , (0, 0, 1)     , (1, 0, 1),
                                 (-1, 0, 0)     , (0, 0, 0)     , (1, 0, 0)],
-                 stateLenght=66,
+                 stateLenght=67,
                  memory_size=5000,
                  gamma=0.95,  # discount rate
                  epsilon=1.0,  # exploration rate
@@ -67,7 +67,7 @@ class DQLalgotirhm:
             self.epsilon *= self.epsilon_decay
 
     #################### start training from another loaded model ####################
-    def continueTraining(self, fileName, episodeOffset, episodes, skipFrames, trainingBatchSize,
+    def continueTraining(self, fileName, episodeOffset, episodes, trainingBatchSize,
                          updateTargetModelFreq, saveModelFreq, epsilon):
         self.episodeOffset = episodeOffset
         self.epsilon = epsilon
@@ -75,10 +75,10 @@ class DQLalgotirhm:
         self.model.loadModel(fileName)
         self.target_model.loadModel(fileName)
 
-        self.trainModel(episodes, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq)
+        self.trainModel(episodes, trainingBatchSize, updateTargetModelFreq, saveModelFreq)
 
     #################### start training from the currently loaded model ####################
-    def trainModel(self, episodes, skipFrames, trainingBatchSize, updateTargetModelFreq, saveModelFreq):
+    def trainModel(self, episodes, trainingBatchSize, updateTargetModelFreq, saveModelFreq):
         simulationWrapper = SimWrap()
         simulationWrapper.init()
         print("init done")
@@ -94,20 +94,20 @@ class DQLalgotirhm:
 
             while True:
                 action = self.act(currentState)
-                reward = 0
-                for _ in range(skipFrames + 1):
-                    nextState, r, done = simulationWrapper.step(action)
-                    #print("state: " + str(len(nextState)) + " r: " + str(r) + " done: " + str(done))
-                    reward += r
-                    if done:
-                        break
-
+                # reward = 0
+                # for _ in range(skipFrames + 1):
+                    # nextState, r, done = simulationWrapper.step(action)
+                    # #print("state: " + str(len(nextState)) + " r: " + str(r) + " done: " + str(done))
+                    # reward += r
+                    # if done:
+                        # break
+                nextState, reward, done = simulationWrapper.step(action)
                 total_reward += reward
 
                 if reward < 0:
                     negative_reward_counter += 1
                     if negative_reward_counter >= 100:
-                        reward = -100
+                        reward = -1
                         done = True
                 else:
                     negative_reward_counter = 0
@@ -135,12 +135,11 @@ class DQLalgotirhm:
             simulationWrapper.reset()
 
         x = [i + 1 for i in range(self.episodeOffset, self.episodeOffset + episodes)]
-        filename = 'trainingPlot.png'
-        plotLearning(x, scores, eps_history, filename)
+        plotLearning(x, scores, eps_history, 'trainingPlot.png')
         simulationWrapper.reset()
         
     #################### Test model ####################
-    def testModel(self, modelFile, episodes, skipFrames):
+    def testModel(self, modelFile, episodes):
         simulationWrapper = SimWrap()
         simulationWrapper.init()
         self.model.loadModel(modelFile)
@@ -153,18 +152,9 @@ class DQLalgotirhm:
             done = False
             currentState, _, _ = simulationWrapper.step([0,0,0])
             while True:
-                reward = 0
                 act_values = self.model.forward(currentState)
                 action_index = np.argmax(act_values[0])
-                
-                print(action_index)
-                print(self.action_space[action_index])
-              
-                for _ in range(skipFrames + 1):
-                    nextState, r, done = simulationWrapper.step(self.action_space[action_index])
-                    reward += r
-                    if done:
-                        break
+                nextState, reward, done = simulationWrapper.step(self.action_space[action_index])
                 total_reward += reward
                 if done:
                     print('Episode: {}/{}, Scores(Time Frames): {}, Total Rewards(adjusted): {:.2}'.format(

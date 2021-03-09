@@ -5,6 +5,7 @@ from fs_msgs.msg import Track
 from fs_msgs.msg import ControlCommand
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
+from geometry_msgs.msg import TwistStamped
 from fs_msgs.msg import Cone
 from fs_msgs.srv import Reset
 
@@ -17,15 +18,15 @@ import time
 class SimWrap:
     """Help of the simulationWrapper class
 
-    This class provides an easy to use interface to test deep reinforcement algorithms on the
+    This class provides an easy to use interface to test reinforcement learning algorithms on the
     Formula student driverless simulater. It folows the same structure as openAI gym uses
     https://gym.openai.com/
 
     The class contains three main functions that must be used in the RL algorithm:
     init()
-    state, score, done = step(action)
+    state, score, done = step(action) # if manualControl == True: the action given is not passed to the rostopic.
     reset()
-
+    
     See documentation in the methods itself for more information
 
     State:
@@ -56,6 +57,8 @@ class SimWrap:
         self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0
         self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
+        
+        self.velocity = 0.0
 
         self.right_list = []
         self.left_list = []
@@ -74,6 +77,7 @@ class SimWrap:
 
         rospy.Subscriber("/fsds/testing_only/odom", Odometry, self.__odomCallback)
         rospy.Subscriber("/fsds/imu", Imu, self.__imuCallback)
+        rospy.Subscriber("/fsds/gss", TwistStamped, self.__gssCallback)
         if not self.manualControl:
             self.pub = rospy.Publisher('/fsds/control_command', ControlCommand, queue_size=3)
 
@@ -86,7 +90,11 @@ class SimWrap:
         """
 
         if not self.manualControl:
-            self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
+            # if velocity is to high -> make sure throttle is not active
+            if self.velocity >= 1.0:
+                self.pub.publish(steering=action[0], throttle=0 ,brake=action[2])
+            else:
+                self.pub.publish(steering=action[0], throttle=action[1],brake=action[2])
         score, done = self.__check_reward()
         state = []
         vision = self.__getVision()
@@ -95,8 +103,8 @@ class SimWrap:
                 state += [vision[count].location.x, vision[count].location.y, vision[count].color]
             else:
                 state += [0,0,0]
-        state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ]
-
+        state += [self.laX, self.laY, self.laZ ,self.avX, self.avY, self.avZ, self.velocity]
+        
         return state, score, done
 
     def reset(self):
@@ -115,6 +123,7 @@ class SimWrap:
         self.orX = 0.0 ; self.orY = 0.0 ; self.orZ = 0.0 ; self.orW = 0.0
         self.laX = 0.0 ; self.laY = 0.0 ; self.laZ = 0.0
         self.avX = 0.0 ; self.avY = 0.0 ; self.avZ = 0.0
+        self.velocity = 0.0
 
         self.next_cone = 0
         for i in range(self.amount_of_cones):
@@ -142,33 +151,62 @@ class SimWrap:
                     tempcone.location.z = vec[2]
                     tempcone.color = cone.color
                     conesInRange.append(tempcone)
+        
+        # create visualisation so algorithm can learn its own features
+        # TODO: execute this code in the first place.
+        # x_left = []
+        # y_left = []
+        # x_right = []
+        # y_right = []
+        # for cone in conesInRange:
+            # if cone.color == 0: # blue = left
+                # x_left.append(cone.location.x)
+                # y_left.append(cone.location.y)
+            # else: # yellow = right
+                # x_right.append(cone.location.x)
+                # y_right.append(cone.location.y)
+        # #plt.plot(x_right, y_right, color='yellow', label='right cone')
+        # #plt.plot(x_left, y_left, color='blue', label='left cone')
+        # plt.fill_between(x_right, y_right, x_left, y_left)
+        # plt.scatter(0, 0, color='red', label='car')
+        # plt.xlim([0,self.lidarRange])
+        # plt.ylim([-self.lidarRange, self.lidarRange])
+        # #plt.legend(loc="upper left")
+        # #plt.xlabel('distance (meter)')
+        # #plt.ylabel('distance (meter)')
+        # plt.savefig('vision.jpg')
+        # plt.close()
+        
+        
         return conesInRange
+    
 
     def __check_reward(self):
         """Calculates the reward the car got based on the track map and the position of the car
-        Returns True, -100 if the car is outside the track.
-        Returns False, 100 if the car is close to a reward line.
-        Returns False, -1 otherwise."""
+        Returns -100, True if the car is outside the track.
+        Returns 100, False if the car is close to a reward line.
+        Returns -1, False otherwise."""
 
-        self.episode_length += 1
-        if self.episode_length > 450:
-            return -10, True
+        # self.episode_length += 1
+        # if self.episode_length > 450:
+            # return -10, True
 
-        if(self.__check_on_track()):
+        if(self.__check_on_track(self.posX, self.posY)):
             # check if agent hasn't claimed a reward yet
             reward = 0
             for i in range(self.amount_of_cones):
                 if self.passed_rewardlines[i][0] == True and self.passed_rewardlines[i][1] == False:
+                    #print("claiming reward from line " + str(i))
                     self.passed_rewardlines[i][1] = True
-                    reward += 100
+                    reward += 2
                     if i == (self.amount_of_cones -1):
-                        return 200, True # track finished
+                        return 20, True # track finished
             if reward == 0:
-                return -1, False
+                return -0.01, False
             else:
                 return reward, False
         else:
-            return -200 , True # off track
+            return -1 , True # off track
 
     def __get_distance_to_line(self, m, q):
         """Returns the perpendicular distance between the position of the car (self.posX, self.posY) and the line mx+q."""
@@ -188,7 +226,7 @@ class SimWrap:
         q = y2 - m*x2
         return (m, q)
 
-    def __check_on_track(self):
+    def __check_on_track(self, x, y):
         """Checks whether the car is on or off the track. If car's position (x, y) is closer than 0.5m from the
         position of a cone (x_list, y_list), the car is outside the track, as the car is 0.5m wide on both sides."""
 
@@ -196,13 +234,13 @@ class SimWrap:
         in_square_list = []
         min_distance = 100.0
         for i in range(self.amount_of_cones):
-            distance_right = distance([self.right_list[i][0], self.right_list[i][1]], [self.posX, self.posY])
+            distance_right = distance([self.right_list[i][0], self.right_list[i][1]], [x, x])
             if distance_right < min_distance:
                 min_distance = distance_right
                 closest_cone = i
             if distance_right <= 0.7: # 0.5 is half the car width
                 return False
-            distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [self.posX, self.posY])
+            distance_left = distance([self.left_list[i][0], self.left_list[i][1]], [x, y])
             if distance_left < min_distance:
                 min_distance = distance_left
                 closest_cone = i
@@ -235,20 +273,20 @@ class SimWrap:
         # indicates whether (x,y) is to the left or to the right
         # credit: https://www.w3resource.com/python-exercises/basic/python-basic-1-exercise-40.php
         # first square: 1,2,3,4
-        c1 = (x2-x1)*(self.posY-y1)-(y2-y1)*(self.posX-x1)
-        c2 = (x3-x2)*(self.posY-y2)-(y3-y2)*(self.posX-x2)
-        c3 = (x4-x3)*(self.posY-y3)-(y4-y3)*(self.posX-x3)
-        c4 = (x1-x4)*(self.posY-y4)-(y1-y4)*(self.posX-x4)
+        c1 = (x2-x1)*(y-y1)-(y2-y1)*(x-x1)
+        c2 = (x3-x2)*(y-y2)-(y3-y2)*(x-x2)
+        c3 = (x4-x3)*(y-y3)-(y4-y3)*(x-x3)
+        c4 = (x1-x4)*(y-y4)-(y1-y4)*(x-x4)
         if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0): # TODO check if we kan drop the second condition
             in_square_list.append(True)
         else:
             in_square_list.append(False)
 
         # second square: 1,4,5,6
-        c1 = (x4-x1)*(self.posY-y1)-(y4-y1)*(self.posX-x1)
-        c2 = (x6-x4)*(self.posY-y4)-(y6-y4)*(self.posX-x4)
-        c3 = (x5-x6)*(self.posY-y6)-(y5-y6)*(self.posX-x6)
-        c4 = (x1-x5)*(self.posY-y5)-(y1-y5)*(self.posX-x5)
+        c1 = (x4-x1)*(y-y1)-(y4-y1)*(x-x1)
+        c2 = (x6-x4)*(y-y4)-(y6-y4)*(x-x4)
+        c3 = (x5-x6)*(y-y6)-(y5-y6)*(x-x6)
+        c4 = (x1-x5)*(y-y5)-(y1-y5)*(x-x5)
         if (c1<=0 and c2<=0 and c3<=0 and c4<=0) or (c1>=0 and c2>=0 and c3>=0 and c4>=0): # TODO check if we kan drop the second condition
             in_square_list.append(True)
         else:
@@ -281,6 +319,7 @@ class SimWrap:
         for _ in self.right_list:
             self.passed_rewardlines.append([False,False]) # [passedRewardLine(boolean), claimedReward(boolean)]
         self.amount_of_cones = len(self.right_list)
+        #self.plot()
         self.receivedTrack = True
 
     def __odomCallback(self, msg):
@@ -295,6 +334,7 @@ class SimWrap:
         distance = self.__get_distance_to_line(m, q)
         if abs(distance) < 0.2:    # if car is close to the line
             if self.passed_rewardlines[self.nextRewardline][0] == False:
+                #print("not passed yet")
                 self.passed_rewardlines[self.nextRewardline][0] = True
                 self.nextRewardline +=1
 
@@ -311,6 +351,9 @@ class SimWrap:
         self.avX = msg.angular_velocity.x
         self.avY = msg.angular_velocity.y
         self.avZ = msg.angular_velocity.z
+        
+    def __gssCallback(self, msg):
+        self.velocity = math.sqrt((msg.twist.linear.x**2) + (msg.twist.linear.y**2) + (msg.twist.linear.z**2))
 
     def plot(self):
         """Plots the boundaries of the track. Left in blue, right in yellow.
@@ -337,12 +380,21 @@ class SimWrap:
         # Plot lines
         plt.plot(left_x_list, left_y_list, 'b-') # b- means blue line
         plt.plot(right_x_list, right_y_list, 'y-') # y- means yellow line
-
+        
+        
         for i in range(len(right_x_list)):
             x = [left_x_list[i], right_x_list[i]]
             y = [left_y_list[i], right_y_list[i]]
             plt.plot(x, y, 'g-')
-        plt.savefig('cones.jpg')
+        
+        #print(math.floor(min(left_x_list + right_x_list)),math.ceil(max(left_x_list + right_x_list)))
+        #print(math.floor(min(left_y_list + right_y_list)),math.ceil(max(left_y_list + right_y_list)))
+        # for x in range(int(math.floor(min(left_x_list + right_x_list))),int(math.ceil(max(left_x_list + right_x_list)))):
+            # for y in range(int(math.floor(min(left_y_list + right_y_list))),int(math.ceil(max(left_y_list + right_y_list)))):
+                # if self.__check_on_track(x,y):
+                    # plt.scatter(x,y)
+        # plt.savefig('cones.jpg')
+        # print("plot done")
 
 
 #################### EXTRA FUNCTIONS ####################
@@ -355,7 +407,7 @@ def rotateVector(vec, q):
     return hamiltonProduct(hamiltonProduct(q,r),q_conj)[1:]
 
 def hamiltonProduct(q,r):
-    """Returns the Hamilton product, calculating the product between two quaternions."""
+    """Returns the Hamilton product (the product between two quaternions)."""
 
     return [r[0]*q[0]-r[1]*q[1]-r[2]*q[2]-r[3]*q[3],
             r[0]*q[1]+r[1]*q[0]-r[2]*q[3]+r[3]*q[2],
